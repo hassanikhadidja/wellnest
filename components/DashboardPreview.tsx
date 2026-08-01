@@ -1,44 +1,9 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
-
-const articles = [
-  {
-    category: "Nutrition Maman",
-    title: "Alimentation pendant la grossesse : les essentiels",
-    date: "12 mars 2026",
-    image: "/images/article-1.jpg",
-  },
-  {
-    category: "Bébé & Enfant",
-    title: "Diversification alimentaire : par où commencer ?",
-    date: "5 mars 2026",
-    image: "/images/article-2.jpg",
-  },
-  {
-    category: "Santé Globale",
-    title: "Assiettes équilibrées pour toute la famille",
-    date: "28 février 2026",
-    image: "/images/article-3.jpg",
-  },
-  {
-    category: "Bien-être",
-    title: "Hydratation et énergie au quotidien",
-    date: "20 février 2026",
-    image: "/images/article-1.jpg",
-  },
-  {
-    category: "Nutrition Maman",
-    title: "Snacks sains pour toute la grossesse",
-    date: "14 février 2026",
-    image: "/images/article-2.jpg",
-  },
-  {
-    category: "Enfant & Adolescent",
-    title: "Lunch box équilibrée pour l'école",
-    date: "8 février 2026",
-    image: "/images/article-3.jpg",
-  },
-];
+import { useEffect, useState } from "react";
+import { articles as defaultArticles, resolveArticles, type Article } from "@/lib/articles";
 
 const metrics = [
   { label: "Nutrition", value: 85, color: "#5a6b38", icon: "/images/metrics/nutrition.png" },
@@ -58,9 +23,14 @@ const cardClass =
   "flex h-full flex-col rounded-xl bg-[rgb(232_223_208/42%)] p-5 sm:p-6";
 
 export function DashboardPreview() {
+  const [articles, setArticles] = useState<Article[]>(defaultArticles);
   const circumference = 2 * Math.PI * 36;
   const progress = 0.78;
   const offset = circumference * (1 - progress);
+
+  useEffect(() => {
+    void resolveArticles().then(setArticles);
+  }, []);
 
   return (
     <section id="blog" className="bg-white pt-14 pb-6 sm:pt-16 sm:pb-8 max-[999px]:pt-6 max-[999px]:pb-4">
@@ -69,17 +39,17 @@ export function DashboardPreview() {
         <div className={`${cardClass} max-[999px]:rounded-none max-[999px]:bg-transparent max-[999px]:p-0 max-[999px]:shadow-none`}>
           <div className="mb-4 flex shrink-0 items-baseline justify-between gap-3 max-[999px]:mb-3">
             <h2 className="font-display text-2xl font-semibold text-ink max-[999px]:text-xl">Articles Récents</h2>
-            <Link href="#blog" className="text-[12px] font-semibold text-olive hover:underline">
+            <Link href="/articles" className="text-[12px] font-semibold text-olive hover:underline">
               Voir tout
             </Link>
           </div>
           <ul className="max-h-[340px] space-y-4 overflow-y-auto pr-1 [scrollbar-color:#5a6b38_#f7f4ee] [scrollbar-width:thin] max-[999px]:max-h-none max-[999px]:space-y-3 max-[999px]:overflow-visible max-[999px]:pr-0">
             {articles.map((article, index) => (
               <li
-                key={`${article.title}-${article.date}`}
+                key={article.id}
                 className={index > 0 ? "max-[999px]:hidden" : undefined}
               >
-                <Link href="#blog" className="group flex gap-3">
+                <Link href={`/articles/${article.id}`} className="group flex gap-3">
                   <div className="relative h-[72px] w-[72px] shrink-0 overflow-hidden rounded-md max-[999px]:h-16 max-[999px]:w-16 max-[999px]:rounded-xl">
                     <Image
                       src={article.image}
@@ -167,7 +137,7 @@ export function DashboardPreview() {
           </div>
 
           <Link
-            href="#questionnaire"
+            href="/questionnaire"
             className="mt-6 inline-flex items-center justify-center rounded-md bg-olive px-4 py-2.5 text-center text-[11px] font-bold tracking-[0.05em] text-white transition-colors hover:bg-olive-dark"
           >
             VOIR UN EXEMPLE D&apos;ANALYSE

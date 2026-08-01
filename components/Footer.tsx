@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { FooterNewsletterForm } from "@/components/FooterNewsletterForm";
 
 const socials = [
   {
@@ -21,21 +22,21 @@ const socials = [
 ];
 
 const quickLinks = [
-  { label: "Accueil", href: "#" },
-  { label: "À propos", href: "#apropos", chevron: true },
-  { label: "Services", href: "#services", chevron: true },
-  { label: "Blog", href: "#blog" },
-  { label: "Ressources", href: "#ressources", chevron: true },
-  { label: "Boutique", href: "#boutique" },
-  { label: "Contact", href: "#contact" },
+  { label: "Accueil", href: "/" },
+  { label: "À propos", href: "/apropos", chevron: true },
+  { label: "Services", href: "/#services", chevron: true },
+  { label: "Blog", href: "/ebooks" },
+  { label: "Ressources", href: "/articles", chevron: true },
+  { label: "Boutique", href: "/programmes" },
+  { label: "Contact", href: "/#contact" },
 ];
 
 const services = [
-  { label: "Nutrition Maman", href: "#services" },
-  { label: "Bébé & Enfant", href: "#services" },
-  { label: "Enfant & Adolescent", href: "#services" },
-  { label: "Santé Globale", href: "#services" },
-  { label: "Bien-être & Équilibre", href: "#services" },
+  { label: "Nutrition Maman", href: "/programmes" },
+  { label: "Bébé & Enfant", href: "/programmes" },
+  { label: "Enfant & Adolescent", href: "/programmes" },
+  { label: "Santé Globale", href: "/programmes" },
+  { label: "Bien-être & Équilibre", href: "/programmes" },
 ];
 
 function SocialRow({ className = "" }: { className?: string }) {
@@ -78,25 +79,7 @@ export function Footer() {
           <p className="mt-1.5 text-[13px] text-white/75">
             Recevez nos conseils nutrition et nouveautés.
           </p>
-          <form className="mt-3 flex flex-col gap-2 sm:flex-row" action="#" method="post">
-            <label htmlFor="newsletter-email" className="sr-only">
-              Adresse e-mail
-            </label>
-            <input
-              id="newsletter-email"
-              type="email"
-              name="email"
-              required
-              placeholder="Votre adresse e-mail"
-              className="w-full rounded-md border-0 bg-white px-4 py-2.5 text-[13px] text-ink placeholder:text-muted outline-none focus:ring-2 focus:ring-sand"
-            />
-            <button
-              type="submit"
-              className="shrink-0 rounded-md bg-sand-dark px-4 py-2.5 text-[11px] font-bold tracking-[0.06em] text-ink transition-colors hover:bg-sand"
-            >
-              S&apos;INSCRIRE
-            </button>
-          </form>
+          <FooterNewsletterForm />
         </div>
 
         <div className="flex flex-col items-center text-center">
@@ -245,7 +228,7 @@ export function Footer() {
             </ul>
 
             <Link
-              href="#questionnaire"
+              href="/questionnaire"
               className="mt-5 inline-flex items-center gap-2 rounded-md bg-white px-4 py-2.5 text-[11px] font-bold tracking-[0.06em] text-olive transition-colors hover:bg-cream"
             >
               <svg viewBox="0 0 20 20" className="h-4 w-4" fill="none" aria-hidden>

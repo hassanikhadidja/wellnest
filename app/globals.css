@@ -211,11 +211,11 @@ body {
     gap: 1.25rem !important;
   }
 
-  .resources-grid .resource-item {
-    display: flex !important;
+  .resources-grid .resource-link {
     flex-direction: row !important;
     align-items: center !important;
     text-align: left !important;
+    gap: 0.75rem !important;
   }
 }
 
@@ -356,30 +356,51 @@ body {
 
   .resources-grid {
     grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
-    gap: 0.35rem !important;
+    gap: 0.4rem !important;
   }
 
   .resources-grid .resource-item {
+    min-width: 0 !important;
+    overflow: hidden !important;
+  }
+
+  .resources-grid .resource-link {
     flex-direction: column !important;
     align-items: center !important;
     text-align: center !important;
     gap: 0.35rem !important;
+    width: 100% !important;
+    min-width: 0 !important;
   }
 
-  .resources-grid .resource-item span {
-    height: 2.5rem !important;
-    width: 2.5rem !important;
+  .resources-grid .resource-icon {
+    height: 2.75rem !important;
+    width: 2.75rem !important;
   }
 
-  .resources-grid .resource-item p:first-child {
+  .resources-grid .resource-copy {
+    width: 100% !important;
+    min-width: 0 !important;
+    overflow: hidden !important;
+  }
+
+  .resources-grid .resource-copy p:first-child {
     font-size: 9px !important;
     line-height: 1.2 !important;
+    overflow: hidden !important;
+    display: -webkit-box !important;
+    -webkit-box-orient: vertical !important;
+    -webkit-line-clamp: 2 !important;
   }
 
-  .resources-grid .resource-item p:last-child {
+  .resources-grid .resource-copy p:last-child {
     font-size: 7.5px !important;
     line-height: 1.2 !important;
-    margin-top: 0.15rem !important;
+    margin-top: 0.1rem !important;
+    overflow: hidden !important;
+    display: -webkit-box !important;
+    -webkit-box-orient: vertical !important;
+    -webkit-line-clamp: 2 !important;
   }
 
   footer {

@@ -153,7 +153,7 @@ export function Hero() {
               برامج غذائية مخصصة لكل مرحلة من الحمل إلى المراهقة.
             </p>
             <Link
-              href="#services"
+              href="/#services"
               className="mt-4 inline-flex items-center justify-center rounded-md bg-olive px-5 py-2.5 text-[11px] font-semibold tracking-[0.08em] text-white transition-colors hover:bg-olive-dark"
             >
               DÉCOUVRIR PLUS
@@ -202,7 +202,7 @@ export function Hero() {
       </section>
 
       {/* Mobile life stages — full-width row below hero (<1000px) */}
-      <div className="bg-white px-3 pt-2 pb-1 min-[1000px]:hidden">
+      <div className="bg-white px-3 pt-8 pb-2 min-[1000px]:hidden">
         <LifeStages className="hero-stages mx-auto flex w-full max-w-xl justify-between gap-1" />
       </div>
     </>

@@ -55,7 +55,7 @@ export function CtaBanner() {
           </div>
 
           <Link
-            href="#questionnaire"
+            href="/questionnaire"
             className="mt-6 inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-[12px] font-bold tracking-[0.06em] text-olive transition-transform hover:scale-[1.02] max-[999px]:mt-0 max-[999px]:hidden"
           >
             COMMENCER LE QUESTIONNAIRE
@@ -106,7 +106,7 @@ export function CtaBanner() {
 
         {/* Mobile CTA button at bottom of card */}
         <Link
-          href="#questionnaire"
+          href="/questionnaire"
           className="hidden items-center justify-center gap-2 rounded-full bg-white px-6 py-3.5 text-center text-[12px] font-bold tracking-[0.06em] text-olive max-[999px]:inline-flex"
         >
           COMMENCER LE QUESTIONNAIRE

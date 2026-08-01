@@ -1,4 +1,27 @@
+"use client";
+
+import { useState, type FormEvent } from "react";
+import { upsertEmail } from "@/lib/dashboard-store";
+
 export function NewsletterBanner() {
+  const [email, setEmail] = useState("");
+  const [done, setDone] = useState(false);
+  const [error, setError] = useState("");
+
+  const onSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    void (async () => {
+      setError("");
+      try {
+        await upsertEmail({ email, source: "newsletter" });
+        setEmail("");
+        setDone(true);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Erreur d'inscription.");
+      }
+    })();
+  };
+
   return (
     <section
       id="newsletter"
@@ -23,9 +46,13 @@ export function NewsletterBanner() {
             Restez informé(e)
           </h2>
           <p className="mt-0.5 text-[10px] leading-tight text-white/85">
-            Recevez nos conseils nutrition et nouveautés.
+            {done
+              ? "Merci ! Votre email a été enregistré."
+              : error
+                ? error
+                : "Recevez nos conseils nutrition et nouveautés."}
           </p>
-          <form className="mt-1.5 flex max-w-[220px] gap-1.5" action="#" method="post">
+          <form className="mt-1.5 flex max-w-[220px] gap-1.5" onSubmit={onSubmit}>
             <label htmlFor="newsletter-banner-email" className="sr-only">
               Adresse e-mail
             </label>
@@ -34,6 +61,8 @@ export function NewsletterBanner() {
               type="email"
               name="email"
               required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               placeholder="Votre e-mail"
               className="min-w-0 flex-1 rounded border-0 bg-white px-2 py-1 text-[10px] text-ink placeholder:text-muted outline-none focus:ring-1 focus:ring-sand"
             />

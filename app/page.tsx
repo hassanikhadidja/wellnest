@@ -8,10 +8,12 @@ import { HealthyRecipes } from "@/components/HealthyRecipes";
 import { NewsletterBanner } from "@/components/NewsletterBanner";
 import { Footer } from "@/components/Footer";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
+import { HashScroll } from "@/components/HashScroll";
 
 export default function Home() {
   return (
     <>
+      <HashScroll />
       <Header />
       <main className="flex-1 max-[999px]:pb-16">
         <Hero />
@@ -23,7 +25,7 @@ export default function Home() {
         <NewsletterBanner />
       </main>
       <Footer />
-      <MobileBottomNav />
+      <MobileBottomNav active="Accueil" />
     </>
   );
 }

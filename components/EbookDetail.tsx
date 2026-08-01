@@ -1,0 +1,198 @@
+import Image from "next/image";
+import Link from "next/link";
+import type { Ebook } from "@/lib/ebooks";
+
+export function EbookDetail({ ebook }: { ebook: Ebook }) {
+  const shortCrumb =
+    ebook.title.length > 28 ? `${ebook.title.slice(0, 28)}…` : ebook.title;
+
+  return (
+    <article className="bg-white pb-10 pt-4">
+      <div className="mx-auto max-w-[760px] px-4 sm:px-6">
+        {/* Breadcrumbs */}
+        <nav className="mb-5 flex flex-wrap items-center gap-1.5 text-[12px] text-muted" aria-label="Fil d'Ariane">
+          <Link href="/" className="inline-flex items-center text-olive hover:underline" aria-label="Accueil">
+            <svg viewBox="0 0 20 20" className="h-3.5 w-3.5" fill="none" aria-hidden>
+              <path
+                d="M3.5 9.5L10 4L16.5 9.5V16.5H12V12H8V16.5H3.5V9.5Z"
+                stroke="currentColor"
+                strokeWidth="1.4"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </Link>
+          <span className="text-ink/30">›</span>
+          <Link href="/" className="hover:text-olive">
+            Accueil
+          </Link>
+          <span className="text-ink/30">›</span>
+          <Link href="/ebooks" className="hover:text-olive">
+            E-books
+          </Link>
+          <span className="text-ink/30">›</span>
+          <span className="font-medium text-ink">{shortCrumb}</span>
+        </nav>
+
+        {/* Hero */}
+        <div className="relative mb-5 aspect-[16/10] overflow-hidden rounded-2xl">
+          <Image
+            src={ebook.image}
+            alt=""
+            fill
+            priority
+            className="object-cover"
+            sizes="(max-width: 760px) 100vw, 760px"
+          />
+          <span className="absolute left-3 top-3 rounded-full bg-olive px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-white">
+            {ebook.category}
+          </span>
+        </div>
+
+        <h1 className="font-display text-[1.75rem] font-semibold leading-tight text-ink sm:text-4xl">
+          {ebook.title}
+        </h1>
+        <p className="mt-2 text-[14px] leading-relaxed text-muted">{ebook.subtitle}</p>
+
+        {/* Meta */}
+        <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2 border-y border-sand/70 py-3 text-[12px] text-muted">
+          <div className="flex items-center gap-2">
+            <span className="relative h-9 w-9 overflow-hidden rounded-full bg-cream">
+              <Image
+                src="/images/features/guides.png"
+                alt=""
+                fill
+                className="object-cover"
+                sizes="36px"
+              />
+            </span>
+            <div className="leading-tight">
+              <p className="font-semibold text-ink">Par {ebook.author.name}</p>
+              <p className="text-[11px]">{ebook.author.role}</p>
+            </div>
+          </div>
+          <span className="hidden h-8 w-px bg-sand sm:block" aria-hidden />
+          <span className="inline-flex items-center gap-1.5">
+            <svg viewBox="0 0 16 16" className="h-3.5 w-3.5" fill="none" aria-hidden>
+              <path d="M4 3H12V13H4V3Z" stroke="currentColor" strokeWidth="1.2" />
+              <path d="M6 6H10M6 8.5H10M6 11H8.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+            </svg>
+            {ebook.pages}
+          </span>
+          <span className="hidden h-8 w-px bg-sand sm:block" aria-hidden />
+          <span className="inline-flex items-center gap-1.5">
+            <svg viewBox="0 0 16 16" className="h-3.5 w-3.5" fill="none" aria-hidden>
+              <rect x="2" y="3" width="12" height="11" rx="1.2" stroke="currentColor" strokeWidth="1.2" />
+              <path d="M5 2V4.5M11 2V4.5M2 6.5H14" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+            </svg>
+            {ebook.date}
+          </span>
+          <span className="hidden h-8 w-px bg-sand sm:block" aria-hidden />
+          <span className="inline-flex items-center gap-1.5">
+            <svg viewBox="0 0 16 16" className="h-3.5 w-3.5" fill="none" aria-hidden>
+              <path d="M8 3V10M5.5 7.5L8 10L10.5 7.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M3.5 12.5H12.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+            </svg>
+            {ebook.delivery}
+          </span>
+        </div>
+
+        {/* CTA */}
+        <div className="mt-5">
+          <button
+            type="button"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-olive px-6 py-3.5 text-[12px] font-bold tracking-[0.06em] text-white transition-colors hover:bg-olive-dark sm:w-auto"
+          >
+            TÉLÉCHARGER LE E-BOOK
+            <span aria-hidden>↓</span>
+          </button>
+        </div>
+
+        {/* Highlights */}
+        <section className="mt-6 rounded-2xl bg-cream p-4 sm:p-5">
+          <div className="mb-3 flex items-center gap-2">
+            <span className="text-olive" aria-hidden>
+              <svg viewBox="0 0 20 20" className="h-5 w-5" fill="none">
+                <path
+                  d="M4 15C4 9 9 4 16 4C16 11 11 16 4 16Z"
+                  stroke="currentColor"
+                  strokeWidth="1.4"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </span>
+            <h2 className="font-display text-lg font-semibold text-ink">Ce que vous allez trouver</h2>
+          </div>
+          <ul className="space-y-2.5">
+            {ebook.highlights.map((point) => (
+              <li key={point} className="flex items-start gap-2.5 text-[13px] leading-relaxed text-ink/85">
+                <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-olive text-white" aria-hidden>
+                  <svg viewBox="0 0 12 12" className="h-2.5 w-2.5" fill="none">
+                    <path d="M2.5 6L5 8.5L9.5 3.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </span>
+                {point}
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        {/* Introduction */}
+        <section className="mt-7">
+          <h2 className="font-display text-xl font-semibold text-ink">À propos de ce guide</h2>
+          <p className="mt-2 text-[14px] leading-relaxed text-ink/85">{ebook.introduction}</p>
+        </section>
+
+        {/* Contents */}
+        <section className="mt-7">
+          <h2 className="font-display text-xl font-semibold text-ink">Sommaire</h2>
+          <ol className="mt-3 space-y-2.5">
+            {ebook.contents.map((item, index) => (
+              <li
+                key={item}
+                className="flex items-start gap-3 rounded-xl border border-sand/70 bg-white px-3 py-2.5 text-[13px] text-ink/85"
+              >
+                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-cream text-[11px] font-bold text-olive">
+                  {index + 1}
+                </span>
+                {item}
+              </li>
+            ))}
+          </ol>
+        </section>
+
+        {/* Tip */}
+        <aside className="mt-7 flex items-start gap-3 rounded-2xl bg-cream px-4 py-3.5">
+          <span className="mt-0.5 text-olive" aria-hidden>
+            <svg viewBox="0 0 20 20" className="h-5 w-5" fill="none">
+              <path
+                d="M8 14.5H12M10 3.5C7.5 3.5 5.5 5.5 5.5 8C5.5 9.7 6.4 11.1 7.7 11.9V13.5H12.3V11.9C13.6 11.1 14.5 9.7 14.5 8C14.5 5.5 12.5 3.5 10 3.5Z"
+                stroke="currentColor"
+                strokeWidth="1.4"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </span>
+          <div>
+            <p className="text-[12px] font-bold uppercase tracking-wide text-olive">Conseil</p>
+            <p className="mt-0.5 text-[13px] leading-relaxed text-ink/85">{ebook.tip}</p>
+          </div>
+        </aside>
+
+        {/* Bottom CTA */}
+        <div className="mt-8 rounded-2xl bg-olive p-5 text-white">
+          <h2 className="font-display text-xl font-semibold">Prêt(e) à commencer ?</h2>
+          <p className="mt-1.5 text-[13px] text-white/85">
+            Téléchargez ce e-book et appliquez les conseils dès aujourd&apos;hui.
+          </p>
+          <button
+            type="button"
+            className="mt-4 inline-flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-[11px] font-bold tracking-[0.06em] text-olive transition-colors hover:bg-cream"
+          >
+            TÉLÉCHARGER MAINTENANT
+            <span aria-hidden>↓</span>
+          </button>
+        </div>
+      </div>
+    </article>
+  );
+}

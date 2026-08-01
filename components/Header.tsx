@@ -5,13 +5,13 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 const navLinks = [
-  { label: "ACCUEIL", href: "#" },
-  { label: "À PROPOS", href: "#apropos" },
-  { label: "SERVICES", href: "#services", dropdown: true },
-  { label: "BLOG", href: "#blog" },
-  { label: "RESSOURCES", href: "#ressources", dropdown: true },
-  { label: "BOUTIQUE", href: "#boutique" },
-  { label: "CONTACT", href: "#contact" },
+  { label: "ACCUEIL", href: "/" },
+  { label: "À PROPOS", href: "/apropos" },
+  { label: "SERVICES", href: "/#services", dropdown: true },
+  { label: "BLOG", href: "/ebooks" },
+  { label: "RESSOURCES", href: "/articles", dropdown: true },
+  { label: "BOUTIQUE", href: "/programmes" },
+  { label: "CONTACT", href: "/#contact" },
 ];
 
 export function Header() {
@@ -93,7 +93,7 @@ export function Header() {
 
         <div className="flex items-center gap-2 sm:gap-3">
           <Link
-            href="#questionnaire"
+            href="/questionnaire"
             className="inline-flex items-center gap-2 rounded-full bg-olive px-3 py-2 text-[11px] font-semibold tracking-[0.06em] text-white transition-colors hover:bg-olive-dark sm:px-4 max-[999px]:rounded-xl max-[999px]:px-3.5 max-[999px]:py-2.5 max-[999px]:text-[10px]"
           >
             <svg className="h-3.5 w-3.5" viewBox="0 0 16 16" fill="none" aria-hidden>
@@ -108,6 +108,20 @@ export function Header() {
             <span>QUESTIONNAIRE</span>
           </Link>
 
+          <Link
+            href="/dashboard"
+            className="inline-flex rounded-full p-2 text-ink/70 transition-colors hover:bg-cream hover:text-olive"
+            aria-label="Tableau de bord"
+            title="Tableau de bord"
+          >
+            <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden>
+              <rect x="3.5" y="3.5" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.6" />
+              <rect x="13.5" y="3.5" width="7" height="4.5" rx="1.5" stroke="currentColor" strokeWidth="1.6" />
+              <rect x="13.5" y="10.5" width="7" height="10" rx="1.5" stroke="currentColor" strokeWidth="1.6" />
+              <rect x="3.5" y="13" width="7" height="7.5" rx="1.5" stroke="currentColor" strokeWidth="1.6" />
+            </svg>
+          </Link>
+
           <button
             type="button"
             className="hidden rounded-full p-2 text-ink/70 transition-colors hover:bg-cream hover:text-olive min-[1000px]:inline-flex"
@@ -119,10 +133,11 @@ export function Header() {
             </svg>
           </button>
 
-          <button
-            type="button"
+          <Link
+            href="/auth"
             className="hidden rounded-full p-2 text-ink/70 transition-colors hover:bg-cream hover:text-olive min-[1000px]:inline-flex"
             aria-label="Mon compte"
+            title="Mon compte"
           >
             <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden>
               <circle cx="12" cy="8" r="3.5" stroke="currentColor" strokeWidth="1.6" />
@@ -133,7 +148,7 @@ export function Header() {
                 strokeLinecap="round"
               />
             </svg>
-          </button>
+          </Link>
 
           {/* Hamburger — <1000px */}
           <button
