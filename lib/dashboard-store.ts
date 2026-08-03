@@ -156,7 +156,7 @@ function asDashUser(u: Omit<DashUser, "password"> & { password?: string }): Dash
 }
 
 function asDashEmail(
-  item: Partial<DashEmail> & {
+  item: Omit<Partial<DashEmail>, "accepted"> & {
     id: string;
     email: string;
     accepted?: unknown;
@@ -389,7 +389,7 @@ export async function upsertEmail(input: {
     email: data.email || input.email,
     name: data.name || input.name,
     source: data.source || input.source,
-    accepted: data.accepted ?? accepted,
+    accepted: readAcceptedFlag(data.accepted, accepted),
     createdAt: data.createdAt,
   });
   const idx = store.emails.findIndex(
@@ -472,13 +472,16 @@ export async function resolveNewsletterAccepted(email: string): Promise<boolean>
   return getNewsletterOptIn(email);
 }
 
-function toAuthUser(
-  user: (Omit<DashUser, "password"> | AuthUser) & {
-    newsletterAccepted?: unknown;
-    acceptedEmails?: unknown;
-    acceptEmails?: unknown;
-  }
-): AuthUser {
+function toAuthUser(user: {
+  id: string;
+  name: string;
+  email: string;
+  role?: string;
+  createdAt?: string;
+  newsletterAccepted?: unknown;
+  acceptedEmails?: unknown;
+  acceptEmails?: unknown;
+}): AuthUser {
   const rawAccepted =
     user.newsletterAccepted ?? user.acceptedEmails ?? user.acceptEmails;
   return {
@@ -486,7 +489,7 @@ function toAuthUser(
     name: user.name,
     email: user.email,
     role: user.role === "admin" ? "admin" : "user",
-    createdAt: "createdAt" in user && user.createdAt ? String(user.createdAt) : undefined,
+    createdAt: user.createdAt ? String(user.createdAt) : undefined,
     newsletterAccepted:
       rawAccepted === undefined ? undefined : readAcceptedFlag(rawAccepted, false),
   };
