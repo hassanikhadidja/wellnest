@@ -4,9 +4,32 @@ const STORAGE_KEY = "wellnest-questionnaire-done";
 const ANSWERS_KEY = "wellnest-questionnaire-answers";
 
 export type QuestionnaireAnswers = {
-  profile: string;
-  trimester?: string;
-  goal: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone?: string;
+  heightCm: string;
+  weightKg: string;
+  targetWeightKg: string;
+  ageRange: string;
+  situation: string;
+  maternityDetail?: string;
+  goals: string[];
+  mealRhythm: string;
+  cravingMoment: string;
+  vegetablePlace: string;
+  dietType: string;
+  digestion: string;
+  energyLevel: string;
+  waterIntake: string;
+  cookingTime: string;
+  stressLevel: string;
+  sleepState: string;
+  contraception: string;
+  postPillSymptom: string;
+  hormonalTrouble: string;
+  pmsSymptom: string;
+  healthCondition: string;
   completedAt: string;
 };
 

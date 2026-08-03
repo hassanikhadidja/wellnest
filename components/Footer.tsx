@@ -101,8 +101,8 @@ export function Footer() {
                 <rect x="2" y="4" width="16" height="12" rx="1.5" stroke="currentColor" strokeWidth="1.4" />
                 <path d="M3 6L10 11L17 6" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
               </svg>
-              <a href="mailto:contact@wellnest.com" className="hover:underline">
-                contact@wellnest.com
+              <a href="mailto:wellnest.diet@gmail.com" className="hover:underline">
+                wellnest.diet@gmail.com
               </a>
             </li>
             <li className="flex items-center justify-end gap-3">
@@ -114,8 +114,8 @@ export function Footer() {
                   strokeLinejoin="round"
                 />
               </svg>
-              <a href="tel:+213555123456" className="hover:underline">
-                +213 555 123 456
+              <a href="tel:+213555589118" className="hover:underline">
+                +213 555 58 91 18
               </a>
             </li>
             <li className="flex items-center justify-end gap-3">
@@ -197,8 +197,8 @@ export function Footer() {
                   <rect x="2" y="4" width="16" height="12" rx="1.5" stroke="currentColor" strokeWidth="1.4" />
                   <path d="M3 6L10 11L17 6" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
                 </svg>
-                <a href="mailto:contact@wellnest.com" className="hover:underline">
-                  contact@wellnest.com
+                <a href="mailto:wellnest.diet@gmail.com" className="hover:underline">
+                  wellnest.diet@gmail.com
                 </a>
               </li>
               <li className="flex items-center gap-3">
@@ -210,8 +210,8 @@ export function Footer() {
                     strokeLinejoin="round"
                   />
                 </svg>
-                <a href="tel:+213555123456" className="hover:underline">
-                  +213 555 123 456
+                <a href="tel:+213555589118" className="hover:underline">
+                  +213 555 58 91 18
                 </a>
               </li>
               <li className="flex items-center gap-3">

@@ -74,6 +74,15 @@ export function HealthyRecipes() {
             </li>
           ))}
         </ul>
+
+        <div className="mt-8 flex justify-center sm:mt-10 max-[999px]:mt-6">
+          <Link
+            href="/ebooks?sort=recipe-free&tag=Recettes%20gratuites"
+            className="inline-flex items-center gap-2 rounded-full bg-olive px-5 py-3 text-[11px] font-bold tracking-[0.06em] text-white transition-colors hover:bg-olive-dark"
+          >
+            Voir toutes les recettes
+          </Link>
+        </div>
       </div>
     </section>
   );

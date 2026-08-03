@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { AUTH_CHANGED_EVENT, getCurrentUser, type AuthUser } from "@/lib/api";
 
 const navLinks = [
   { label: "ACCUEIL", href: "/" },
@@ -16,6 +17,14 @@ const navLinks = [
 
 export function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [user, setUser] = useState<AuthUser | null>(null);
+
+  useEffect(() => {
+    const sync = () => setUser(getCurrentUser());
+    sync();
+    window.addEventListener(AUTH_CHANGED_EVENT, sync);
+    return () => window.removeEventListener(AUTH_CHANGED_EVENT, sync);
+  }, []);
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -29,6 +38,8 @@ export function Header() {
       document.body.style.overflow = "";
     };
   }, [menuOpen]);
+
+  const isAdmin = user?.role === "admin";
 
   return (
     <header className="sticky top-0 z-50 overflow-visible border-b border-sand/60 bg-white/95 backdrop-blur-sm">
@@ -108,19 +119,21 @@ export function Header() {
             <span>QUESTIONNAIRE</span>
           </Link>
 
-          <Link
-            href="/dashboard"
-            className="inline-flex rounded-full p-2 text-ink/70 transition-colors hover:bg-cream hover:text-olive"
-            aria-label="Tableau de bord"
-            title="Tableau de bord"
-          >
-            <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden>
-              <rect x="3.5" y="3.5" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.6" />
-              <rect x="13.5" y="3.5" width="7" height="4.5" rx="1.5" stroke="currentColor" strokeWidth="1.6" />
-              <rect x="13.5" y="10.5" width="7" height="10" rx="1.5" stroke="currentColor" strokeWidth="1.6" />
-              <rect x="3.5" y="13" width="7" height="7.5" rx="1.5" stroke="currentColor" strokeWidth="1.6" />
-            </svg>
-          </Link>
+          {isAdmin && (
+            <Link
+              href="/dashboard"
+              className="inline-flex rounded-full p-2 text-ink/70 transition-colors hover:bg-cream hover:text-olive"
+              aria-label="Tableau de bord"
+              title="Tableau de bord"
+            >
+              <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden>
+                <rect x="3.5" y="3.5" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.6" />
+                <rect x="13.5" y="3.5" width="7" height="4.5" rx="1.5" stroke="currentColor" strokeWidth="1.6" />
+                <rect x="13.5" y="10.5" width="7" height="10" rx="1.5" stroke="currentColor" strokeWidth="1.6" />
+                <rect x="3.5" y="13" width="7" height="7.5" rx="1.5" stroke="currentColor" strokeWidth="1.6" />
+              </svg>
+            </Link>
+          )}
 
           <button
             type="button"
@@ -134,10 +147,10 @@ export function Header() {
           </button>
 
           <Link
-            href="/auth"
+            href="/profil"
             className="hidden rounded-full p-2 text-ink/70 transition-colors hover:bg-cream hover:text-olive min-[1000px]:inline-flex"
-            aria-label="Mon compte"
-            title="Mon compte"
+            aria-label={user ? "Mon profil" : "Mon compte"}
+            title={user ? "Mon profil" : "Mon compte"}
           >
             <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden>
               <circle cx="12" cy="8" r="3.5" stroke="currentColor" strokeWidth="1.6" />

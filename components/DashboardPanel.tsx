@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { getToken } from "@/lib/api";
+import { getCurrentUser, getToken } from "@/lib/api";
 import {
   CONTENT_CATEGORIES,
   type ContentCategory,
@@ -17,11 +17,14 @@ import {
   linesToList,
   listToLines,
   newSection,
+  deleteEmail,
   refreshStore,
   saveArticle,
   saveEbook,
   saveUser,
+  setEmailAccepted,
   tagsFromInput,
+  upsertEmail,
 } from "@/lib/dashboard-store";
 
 type SectionId = "users" | "articles" | "ebooks" | "emails";
@@ -44,6 +47,13 @@ const emptyArticle = (): Omit<DashArticle, "id" | "createdAt"> & { id?: string }
   sections: [newSection()],
   tip: "",
   tags: [],
+});
+
+const emptyEmailForm = () => ({
+  email: "",
+  name: "",
+  source: "newsletter" as "newsletter" | "account",
+  accepted: true,
 });
 
 const emptyEbook = (): Omit<DashEbook, "id" | "createdAt"> & { id?: string } => ({
@@ -147,6 +157,7 @@ export function DashboardPanel() {
   const [userForm, setUserForm] = useState<ReturnType<typeof emptyUser> | null>(null);
   const [articleForm, setArticleForm] = useState<ReturnType<typeof emptyArticle> | null>(null);
   const [ebookForm, setEbookForm] = useState<ReturnType<typeof emptyEbook> | null>(null);
+  const [emailForm, setEmailForm] = useState<ReturnType<typeof emptyEmailForm> | null>(null);
   const [keyPointsText, setKeyPointsText] = useState("");
   const [articleTags, setArticleTags] = useState("");
   const [highlightsText, setHighlightsText] = useState("");
@@ -156,9 +167,13 @@ export function DashboardPanel() {
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [authed, setAuthed] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   const refresh = async () => {
-    setAuthed(Boolean(getToken()));
+    const token = Boolean(getToken());
+    const user = getCurrentUser();
+    setAuthed(token);
+    setIsAdmin(token && user?.role === "admin");
     const store = await refreshStore();
     setUsers(store.users);
     setArticles(store.articles);
@@ -192,15 +207,57 @@ export function DashboardPanel() {
     }
   };
 
+  const emailRows = useMemo(() => {
+    type EmailRow = DashEmail & { virtual?: boolean };
+    const rows: EmailRow[] = emails.map((item) => ({ ...item }));
+    const seen = new Set(emails.map((e) => e.email.trim().toLowerCase()));
+
+    for (const user of users) {
+      const key = user.email.trim().toLowerCase();
+      if (seen.has(key)) continue;
+      seen.add(key);
+      rows.push({
+        id: `user-${user.id}`,
+        email: user.email,
+        name: user.name,
+        source: "account",
+        accepted: false,
+        createdAt: user.createdAt,
+        virtual: true,
+      });
+    }
+
+    return rows;
+  }, [emails, users]);
+
   const sections = useMemo(
     () => [
       { id: "users" as const, label: "Utilisateurs", count: users.length },
       { id: "articles" as const, label: "Articles", count: articles.length },
       { id: "ebooks" as const, label: "E-books", count: ebooks.length },
-      { id: "emails" as const, label: "Emails", count: emails.length },
+      { id: "emails" as const, label: "Emails", count: emailRows.length },
     ],
-    [users.length, articles.length, ebooks.length, emails.length]
+    [users.length, articles.length, ebooks.length, emailRows.length]
   );
+
+  if (authed && !isAdmin) {
+    return (
+      <div className="bg-cream/40 flex min-h-[calc(100dvh-var(--header-h))] items-center justify-center px-4 py-16">
+        <div className="max-w-md rounded-2xl border border-sand/70 bg-white p-6 text-center shadow-sm">
+          <h1 className="font-display text-2xl font-semibold text-ink">Accès admin requis</h1>
+          <p className="mt-2 text-[13px] text-muted">
+            Le tableau de bord est réservé aux administrateurs WELLNEST.
+          </p>
+          <Link
+            href="/profil"
+            className="mt-5 inline-flex rounded-full bg-olive px-5 py-3 text-[11px] font-bold tracking-[0.06em] text-white hover:bg-olive-dark"
+          >
+            Retour au profil
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-cream/40 min-h-[calc(100dvh-var(--header-h))]">
@@ -244,7 +301,7 @@ export function DashboardPanel() {
           {!authed && (
             <p className="mb-4 rounded-lg bg-cream px-3 py-2 text-[13px] text-ink">
               Connectez-vous en tant qu&apos;admin pour gérer utilisateurs et emails.{" "}
-              <Link href="/auth" className="font-semibold text-olive hover:underline">
+              <Link href="/profil" className="font-semibold text-olive hover:underline">
                 Se connecter
               </Link>
             </p>
@@ -439,31 +496,43 @@ export function DashboardPanel() {
 
           {active === "emails" && (
             <>
-              <header className="mb-5">
-                <h1 className="font-display text-2xl font-semibold text-ink">Emails</h1>
-                <p className="mt-1 text-[13px] text-muted">
-                  Inscrits via « Restez informé(e) » et comptes utilisateurs.
-                </p>
+              <header className="mb-5 flex flex-wrap items-end justify-between gap-3">
+                <div>
+                  <h1 className="font-display text-2xl font-semibold text-ink">Emails</h1>
+                  <p className="mt-1 text-[13px] text-muted">
+                    Ajoutez, supprimez ou modifiez l&apos;acceptation des emails (Oui / Non).
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  disabled={!authed}
+                  onClick={() => setEmailForm(emptyEmailForm())}
+                  className="rounded-full bg-olive px-4 py-2 text-[11px] font-bold tracking-wide text-white hover:bg-olive-dark disabled:opacity-50"
+                >
+                  + AJOUTER
+                </button>
               </header>
               <div className="overflow-x-auto">
-                <table className="w-full min-w-[520px] text-left text-[13px]">
+                <table className="w-full min-w-[720px] text-left text-[13px]">
                   <thead>
                     <tr className="border-b border-sand text-[11px] uppercase tracking-wide text-muted">
                       <th className="pb-2">Email</th>
                       <th className="pb-2">Nom</th>
                       <th className="pb-2">Source</th>
+                      <th className="pb-2">Accepte les emails</th>
                       <th className="pb-2">Date</th>
+                      <th className="pb-2">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {emails.length === 0 && (
+                    {emailRows.length === 0 && (
                       <tr>
-                        <td colSpan={4} className="py-6 text-muted">
+                        <td colSpan={6} className="py-6 text-muted">
                           Aucun email collecté pour le moment.
                         </td>
                       </tr>
                     )}
-                    {emails.map((item) => (
+                    {emailRows.map((item) => (
                       <tr key={item.id} className="border-b border-sand/60">
                         <td className="py-3 font-semibold">{item.email}</td>
                         <td className="py-3 text-muted">{item.name || "—"}</td>
@@ -472,7 +541,49 @@ export function DashboardPanel() {
                             {item.source === "account" ? "Compte" : "Newsletter"}
                           </span>
                         </td>
-                        <td className="py-3 text-muted">{item.createdAt}</td>
+                        <td className="py-3">
+                          <button
+                            type="button"
+                            disabled={busy || !authed}
+                            title="Modifier l'acceptation"
+                            onClick={() =>
+                              void run(async () => {
+                                if (item.virtual) {
+                                  await upsertEmail({
+                                    email: item.email,
+                                    name: item.name,
+                                    source: "account",
+                                    accepted: true,
+                                  });
+                                  return;
+                                }
+                                await setEmailAccepted(item.id, !item.accepted);
+                              })
+                            }
+                            className={`rounded-full px-2.5 py-1 text-[11px] font-bold tracking-wide transition-colors disabled:opacity-50 ${
+                              item.accepted
+                                ? "bg-olive/15 text-olive hover:bg-olive/25"
+                                : "bg-sand text-brown hover:bg-sand/80"
+                            }`}
+                          >
+                            {item.accepted ? "Oui" : "Non"}
+                          </button>
+                        </td>
+                        <td className="py-3 text-muted">{item.createdAt || "—"}</td>
+                        <td className="py-3">
+                          {!item.virtual ? (
+                            <button
+                              type="button"
+                              disabled={busy || !authed}
+                              className="text-[12px] font-semibold text-red-700 disabled:opacity-50"
+                              onClick={() => void run(() => deleteEmail(item.id))}
+                            >
+                              Supprimer
+                            </button>
+                          ) : (
+                            <span className="text-[12px] text-muted">—</span>
+                          )}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -522,6 +633,70 @@ export function DashboardPanel() {
             </Field>
             <button type="submit" className="rounded-full bg-olive px-5 py-2.5 text-[12px] font-bold text-white">
               Enregistrer
+            </button>
+          </form>
+        </Modal>
+      )}
+
+      {emailForm && (
+        <Modal title="Ajouter un email" onClose={() => setEmailForm(null)}>
+          <form
+            className="space-y-3"
+            onSubmit={(e) => {
+              e.preventDefault();
+              void run(async () => {
+                await upsertEmail({
+                  email: emailForm.email.trim(),
+                  name: emailForm.name.trim() || undefined,
+                  source: emailForm.source,
+                  accepted: emailForm.accepted,
+                });
+                setEmailForm(null);
+              });
+            }}
+          >
+            <Field label="Email">
+              <input
+                className={inputClass}
+                type="email"
+                required
+                value={emailForm.email}
+                onChange={(e) => setEmailForm({ ...emailForm, email: e.target.value })}
+              />
+            </Field>
+            <Field label="Nom (optionnel)">
+              <input
+                className={inputClass}
+                value={emailForm.name}
+                onChange={(e) => setEmailForm({ ...emailForm, name: e.target.value })}
+              />
+            </Field>
+            <Field label="Source">
+              <select
+                className={inputClass}
+                value={emailForm.source}
+                onChange={(e) =>
+                  setEmailForm({
+                    ...emailForm,
+                    source: e.target.value as "newsletter" | "account",
+                  })
+                }
+              >
+                <option value="newsletter">Newsletter</option>
+                <option value="account">Compte</option>
+              </select>
+            </Field>
+            <label className="flex items-center gap-2 text-[13px] font-medium text-ink">
+              <input
+                type="checkbox"
+                checked={emailForm.accepted}
+                onChange={(e) => setEmailForm({ ...emailForm, accepted: e.target.checked })}
+                className="h-4 w-4 accent-[#5a6b38]"
+              />
+              Accepte les emails
+            </label>
+            <button type="submit" className="rounded-full bg-olive px-5 py-2.5 text-[12px] font-bold text-white">
+              Ajouter
             </button>
           </form>
         </Modal>

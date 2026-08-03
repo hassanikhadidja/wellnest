@@ -6,6 +6,24 @@ export function getApiBase() {
 }
 
 const TOKEN_KEY = "wellnest-auth-token";
+const USER_KEY = "wellnest-auth-user";
+export const AUTH_CHANGED_EVENT = "wellnest-auth-changed";
+
+export type AuthUser = {
+  id: string;
+  name: string;
+  email: string;
+  role: "user" | "admin";
+  createdAt?: string;
+  /** Whether the user accepts newsletter / marketing emails */
+  newsletterAccepted?: boolean;
+};
+
+function notifyAuthChanged() {
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new Event(AUTH_CHANGED_EVENT));
+  }
+}
 
 export function getToken(): string | null {
   if (typeof window === "undefined") return null;
@@ -24,6 +42,51 @@ export function setToken(token: string | null) {
   } catch {
     // ignore
   }
+}
+
+export function getCurrentUser(): AuthUser | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.localStorage.getItem(USER_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Partial<AuthUser>;
+    if (!parsed.id || !parsed.email || !parsed.name) return null;
+    return {
+      id: String(parsed.id),
+      name: String(parsed.name),
+      email: String(parsed.email),
+      role: parsed.role === "admin" ? "admin" : "user",
+      createdAt: parsed.createdAt ? String(parsed.createdAt) : undefined,
+      newsletterAccepted:
+        typeof parsed.newsletterAccepted === "boolean"
+          ? parsed.newsletterAccepted
+          : undefined,
+    };
+  } catch {
+    return null;
+  }
+}
+
+export function setCurrentUser(user: AuthUser | null) {
+  if (typeof window === "undefined") return;
+  try {
+    if (user) window.localStorage.setItem(USER_KEY, JSON.stringify(user));
+    else window.localStorage.removeItem(USER_KEY);
+  } catch {
+    // ignore
+  }
+  notifyAuthChanged();
+}
+
+export function clearAuth() {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.removeItem(TOKEN_KEY);
+    window.localStorage.removeItem(USER_KEY);
+  } catch {
+    // ignore
+  }
+  notifyAuthChanged();
 }
 
 export class ApiError extends Error {

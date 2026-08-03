@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { EbookDownloadForm } from "@/components/EbookDownloadForm";
 import type { Ebook } from "@/lib/ebooks";
 
 export function EbookDetail({ ebook }: { ebook: Ebook }) {
@@ -98,13 +99,7 @@ export function EbookDetail({ ebook }: { ebook: Ebook }) {
 
         {/* CTA */}
         <div className="mt-5">
-          <button
-            type="button"
-            className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-olive px-6 py-3.5 text-[12px] font-bold tracking-[0.06em] text-white transition-colors hover:bg-olive-dark sm:w-auto"
-          >
-            TÉLÉCHARGER LE E-BOOK
-            <span aria-hidden>↓</span>
-          </button>
+          <EbookDownloadForm ebookId={ebook.id} variant="primary" />
         </div>
 
         {/* Highlights */}
@@ -184,13 +179,9 @@ export function EbookDetail({ ebook }: { ebook: Ebook }) {
           <p className="mt-1.5 text-[13px] text-white/85">
             Téléchargez ce e-book et appliquez les conseils dès aujourd&apos;hui.
           </p>
-          <button
-            type="button"
-            className="mt-4 inline-flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-[11px] font-bold tracking-[0.06em] text-olive transition-colors hover:bg-cream"
-          >
-            TÉLÉCHARGER MAINTENANT
-            <span aria-hidden>↓</span>
-          </button>
+          <div className="mt-4">
+            <EbookDownloadForm ebookId={ebook.id} variant="inverse" />
+          </div>
         </div>
       </div>
     </article>

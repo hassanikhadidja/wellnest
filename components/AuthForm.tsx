@@ -1,12 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { getCurrentUser, getToken } from "@/lib/api";
 import { loginAccount, registerAccount } from "@/lib/dashboard-store";
 
 type Mode = "login" | "signup";
 
 export function AuthForm() {
+  const router = useRouter();
   const [mode, setMode] = useState<Mode>("login");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -15,6 +18,12 @@ export function AuthForm() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    if (getToken() && getCurrentUser()) {
+      router.replace("/profil");
+    }
+  }, [router]);
 
   return (
     <div className="bg-cream/40 px-4 py-10 sm:py-14">
@@ -62,11 +71,11 @@ export function AuthForm() {
               try {
                 if (mode === "signup") {
                   await registerAccount({ name, email, password });
-                  setMessage("Compte créé. Votre email apparaît dans le dashboard.");
                 } else {
                   await loginAccount({ email, password });
-                  setMessage("Connexion réussie.");
                 }
+                setMessage("Connexion réussie. Redirection…");
+                router.replace("/profil");
               } catch (err) {
                 setError(err instanceof Error ? err.message : "Une erreur est survenue.");
               } finally {

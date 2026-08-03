@@ -41,7 +41,7 @@ const items = [
   },
   {
     label: "Profil",
-    href: "/auth",
+    href: "/profil",
     icon: (
       <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5" aria-hidden>
         <circle cx="12" cy="8" r="3.2" stroke="currentColor" strokeWidth="1.6" />

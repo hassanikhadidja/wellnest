@@ -6,7 +6,7 @@ import { Footer } from "@/components/Footer";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
 
 export const metadata: Metadata = {
-  title: "Questionnaire bien-être — WELLNEST",
+  title: "Questionnaire Diététique & Analyse Nutri-Profil — WELLNEST",
   description:
     "Répondez à quelques questions pour recevoir des recommandations nutritionnelles personnalisées.",
 };

@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import { upsertEmail } from "@/lib/dashboard-store";
+import { requestEmail } from "@/lib/email-client";
 
 export function NewsletterBanner() {
   const [email, setEmail] = useState("");
@@ -13,7 +14,12 @@ export function NewsletterBanner() {
     void (async () => {
       setError("");
       try {
-        await upsertEmail({ email, source: "newsletter" });
+        const submitted = email.trim();
+        await upsertEmail({ email: submitted, source: "newsletter", accepted: true });
+        await requestEmail("/api/email/newsletter", {
+          email: submitted,
+          source: "newsletter",
+        });
         setEmail("");
         setDone(true);
       } catch (err) {

@@ -1,4 +1,16 @@
-import { api, getToken, setToken } from "@/lib/api";
+import {
+  api,
+  clearAuth,
+  getToken,
+  setCurrentUser,
+  setToken,
+  type AuthUser,
+} from "@/lib/api";
+import {
+  getNewsletterOptIn,
+  readAcceptedFlag,
+  setNewsletterOptIn,
+} from "@/lib/newsletter-preference";
 
 export const CONTENT_CATEGORIES = [
   "Nutrition Maman",
@@ -75,6 +87,8 @@ export type DashEmail = {
   email: string;
   name?: string;
   source: "newsletter" | "account";
+  /** Whether this contact accepts emails / newsletter */
+  accepted: boolean;
   createdAt: string;
 };
 
@@ -122,7 +136,9 @@ function readCache(): Store {
       users: parsed.users ?? [],
       articles: parsed.articles ?? [],
       ebooks: parsed.ebooks ?? [],
-      emails: parsed.emails ?? [],
+      emails: (parsed.emails ?? []).map((item) =>
+        asDashEmail(item as DashEmail & { id: string; email: string })
+      ),
     };
   } catch {
     return structuredClone(defaultStore);
@@ -137,6 +153,29 @@ function writeCache(store: Store) {
 
 function asDashUser(u: Omit<DashUser, "password"> & { password?: string }): DashUser {
   return { ...u, password: u.password ?? "" };
+}
+
+function asDashEmail(
+  item: Partial<DashEmail> & {
+    id: string;
+    email: string;
+    accepted?: unknown;
+    acceptEmails?: unknown;
+    subscribed?: unknown;
+  }
+): DashEmail {
+  const accepted = readAcceptedFlag(
+    item.accepted ?? item.acceptEmails ?? item.subscribed,
+    true
+  );
+  return {
+    id: String(item.id),
+    email: item.email,
+    name: item.name,
+    source: item.source === "account" ? "account" : "newsletter",
+    accepted,
+    createdAt: item.createdAt ? String(item.createdAt) : "",
+  };
 }
 
 export function getStore() {
@@ -160,7 +199,7 @@ export async function refreshStore(): Promise<Store> {
           api<DashEmail[]>("/newsletter", { auth: true }),
         ]);
         store.users = users.map((u) => asDashUser(u));
-        store.emails = emails;
+        store.emails = emails.map((item) => asDashEmail(item));
       } catch {
         // keep cached admin data if token expired / not admin
       }
@@ -322,16 +361,135 @@ export async function upsertEmail(input: {
   email: string;
   name?: string;
   source: "newsletter" | "account";
+  accepted?: boolean;
 }) {
-  await api("/newsletter", {
+  const accepted = input.accepted !== false;
+  const data = await api<{
+    id?: string;
+    email?: string;
+    name?: string;
+    source?: "newsletter" | "account";
+    accepted?: unknown;
+    createdAt?: string;
+  }>("/newsletter", {
     method: "POST",
     body: {
       email: input.email,
       name: input.name,
       source: input.source,
+      accepted,
     },
   });
+
+  setNewsletterOptIn(input.email, accepted);
+
+  const store = readCache();
+  const normalized = asDashEmail({
+    id: data.id || `${Date.now()}`,
+    email: data.email || input.email,
+    name: data.name || input.name,
+    source: data.source || input.source,
+    accepted: data.accepted ?? accepted,
+    createdAt: data.createdAt,
+  });
+  const idx = store.emails.findIndex(
+    (e) => e.email.trim().toLowerCase() === normalized.email.trim().toLowerCase()
+  );
+  if (idx >= 0) store.emails[idx] = { ...store.emails[idx], ...normalized, accepted };
+  else store.emails.unshift(normalized);
+  writeCache(store);
+
   await refreshStore();
+}
+
+export async function setEmailAccepted(id: string, accepted: boolean) {
+  const store = readCache();
+  const current = store.emails.find((e) => e.id === id);
+
+  try {
+    await api(`/newsletter/${id}`, {
+      method: "PATCH",
+      auth: true,
+      body: { accepted },
+    });
+  } catch {
+    if (!current) throw new Error("Email introuvable.");
+    await api("/newsletter", {
+      method: "POST",
+      body: {
+        email: current.email,
+        name: current.name,
+        source: current.source,
+        accepted,
+      },
+    });
+  }
+
+  if (current) setNewsletterOptIn(current.email, accepted);
+
+  const next = readCache();
+  next.emails = next.emails.map((e) => (e.id === id ? { ...e, accepted } : e));
+  writeCache(next);
+  await refreshStore();
+}
+
+export async function deleteEmail(id: string) {
+  const store = readCache();
+  const current = store.emails.find((e) => e.id === id);
+
+  await api(`/newsletter/${id}`, { method: "DELETE", auth: true });
+
+  if (current) setNewsletterOptIn(current.email, false);
+
+  const next = readCache();
+  next.emails = next.emails.filter((e) => e.id !== id);
+  writeCache(next);
+}
+
+/** Resolve newsletter acceptance for the logged-in user (API + local cache). */
+export async function resolveNewsletterAccepted(email: string): Promise<boolean> {
+  const normalized = email.trim().toLowerCase();
+
+  if (getToken()) {
+    try {
+      const emails = await api<
+        Array<Partial<DashEmail> & { id: string; email: string }>
+      >("/newsletter", { auth: true });
+      const match = emails.find((e) => e.email.trim().toLowerCase() === normalized);
+      if (match) {
+        const accepted = asDashEmail(match).accepted;
+        setNewsletterOptIn(email, accepted);
+        return accepted;
+      }
+      // Listed nowhere → not accepted yet
+      setNewsletterOptIn(email, false);
+      return false;
+    } catch {
+      // Non-admin users cannot list newsletters — use cache / profile
+    }
+  }
+
+  return getNewsletterOptIn(email);
+}
+
+function toAuthUser(
+  user: (Omit<DashUser, "password"> | AuthUser) & {
+    newsletterAccepted?: unknown;
+    acceptedEmails?: unknown;
+    acceptEmails?: unknown;
+  }
+): AuthUser {
+  const rawAccepted =
+    user.newsletterAccepted ?? user.acceptedEmails ?? user.acceptEmails;
+  return {
+    id: String(user.id),
+    name: user.name,
+    email: user.email,
+    role: user.role === "admin" ? "admin" : "user",
+    createdAt: "createdAt" in user && user.createdAt ? String(user.createdAt) : undefined,
+    newsletterAccepted:
+      rawAccepted === undefined ? undefined : readAcceptedFlag(rawAccepted, false),
+  };
 }
 
 export async function registerAccount(input: {
@@ -347,6 +505,7 @@ export async function registerAccount(input: {
     }
   );
   setToken(data.token);
+  setCurrentUser(toAuthUser(data.user));
   await refreshStore();
   return data.user;
 }
@@ -360,12 +519,62 @@ export async function loginAccount(input: { email: string; password: string }) {
     }
   );
   setToken(data.token);
+  setCurrentUser(toAuthUser(data.user));
   await refreshStore();
   return data.user;
 }
 
+export async function fetchCurrentProfile(): Promise<AuthUser | null> {
+  if (!getToken()) return null;
+  try {
+    const data = await api<
+      | AuthUser
+      | {
+          user: AuthUser;
+          newsletterAccepted?: unknown;
+          acceptedEmails?: unknown;
+        }
+      | Omit<DashUser, "password">
+    >("/user/profile", { auth: true });
+
+    const nested =
+      data && typeof data === "object" && "user" in data
+        ? (data as { user: AuthUser }).user
+        : null;
+    const raw = nested || data;
+    if (!raw || typeof raw !== "object" || !("email" in raw) || !("name" in raw)) {
+      return null;
+    }
+
+    const root = data as {
+      newsletterAccepted?: unknown;
+      acceptedEmails?: unknown;
+      acceptEmails?: unknown;
+    };
+    const user = toAuthUser({
+      ...(raw as AuthUser),
+      newsletterAccepted:
+        (raw as AuthUser).newsletterAccepted ??
+        root.newsletterAccepted ??
+        root.acceptedEmails ??
+        root.acceptEmails,
+    });
+
+    if (typeof user.newsletterAccepted === "boolean") {
+      setNewsletterOptIn(user.email, user.newsletterAccepted);
+    } else {
+      user.newsletterAccepted = await resolveNewsletterAccepted(user.email);
+    }
+
+    setCurrentUser(user);
+    return user;
+  } catch {
+    return null;
+  }
+}
+
 export async function logoutAccount() {
-  setToken(null);
+  clearAuth();
   notify();
 }
 
