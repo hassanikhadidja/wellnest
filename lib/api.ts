@@ -1,6 +1,13 @@
 const DEFAULT_API = "http://127.0.0.1:5002";
 
+/**
+ * Browser calls go through the Next.js `/backend` rewrite (same origin → no CORS).
+ * Server-side calls use the absolute API URL from env.
+ */
 export function getApiBase() {
+  if (typeof window !== "undefined") {
+    return "/backend";
+  }
   const fromEnv = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
   return fromEnv || DEFAULT_API;
 }
