@@ -10,7 +10,9 @@ export type MailTemplateId =
   | "newsletter-notify"
   | "questionnaire-confirm"
   | "questionnaire-notify"
-  | "ebook-delivery";
+  | "ebook-delivery"
+  | "account-welcome"
+  | "account-notify";
 
 type TemplateParams = Record<string, string>;
 
@@ -20,6 +22,8 @@ const TEMPLATE_FILES: Record<MailTemplateId, string> = {
   "questionnaire-confirm": "3-questionnaire-confirm.html",
   "questionnaire-notify": "4-questionnaire-notify.html",
   "ebook-delivery": "5-ebook-delivery.html",
+  "account-welcome": "6-account-welcome.html",
+  "account-notify": "7-account-notify.html",
 };
 
 const TEMPLATE_SUBJECTS: Record<MailTemplateId, (params: TemplateParams) => string> = {
@@ -30,6 +34,9 @@ const TEMPLATE_SUBJECTS: Record<MailTemplateId, (params: TemplateParams) => stri
     `Nouveau questionnaire — ${params.first_name ?? ""} ${params.last_name ?? ""}`.trim(),
   "ebook-delivery": (params) =>
     `Lien de téléchargement — ${params.ebook_title ?? "e-book WELLNEST"}`,
+  "account-welcome": () => "Bienvenue sur WELLNEST — votre compte est prêt",
+  "account-notify": (params) =>
+    `Nouveau compte — ${params.user_name ?? ""} (${params.user_email ?? ""})`.trim(),
 };
 
 function requiredEnv(name: string): string {
@@ -149,6 +156,23 @@ function buildTextFallback(
         `Télécharger : ${params.download_url ?? ""}`,
         "",
         "Contact : wellnest.diet@gmail.com · +213 555 58 91 18",
+      ].join("\n");
+    case "account-welcome":
+      return [
+        "WELLNEST — Bienvenue",
+        "",
+        `Bonjour ${params.user_name ?? ""},`,
+        "Votre compte WELLNEST a bien été créé.",
+        `Adresse : ${params.to_email ?? ""}`,
+        `Espace personnel : ${SITE_URL}profil`,
+        "",
+        "Contact : wellnest.diet@gmail.com · +213 555 58 91 18",
+      ].join("\n");
+    case "account-notify":
+      return [
+        "WELLNEST — Nouveau compte",
+        `Nom : ${params.user_name ?? ""}`,
+        `Email : ${params.user_email ?? ""}`,
       ].join("\n");
   }
 }

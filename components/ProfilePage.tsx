@@ -83,17 +83,20 @@ export function ProfilePage() {
       if (cancelled) return;
 
       if (profile) {
-        const accepted =
-          typeof profile.newsletterAccepted === "boolean"
-            ? profile.newsletterAccepted
-            : await resolveNewsletterAccepted(profile.email);
+        const accepted = await resolveNewsletterAccepted(
+          profile.email,
+          profile.newsletterAccepted
+        );
         if (cancelled) return;
         applyUser({ ...profile, newsletterAccepted: accepted }, accepted);
         return;
       }
 
       if (cached) {
-        const accepted = await resolveNewsletterAccepted(cached.email);
+        const accepted = await resolveNewsletterAccepted(
+          cached.email,
+          cached.newsletterAccepted
+        );
         if (cancelled) return;
         applyUser({ ...cached, newsletterAccepted: accepted }, accepted);
         return;
@@ -134,7 +137,8 @@ export function ProfilePage() {
       }
       setNewsletterOptIn(user.email, next);
       setNewsletter(next);
-      setCurrentUser({ ...user, newsletterAccepted: next });
+      // Silent: avoid AUTH_CHANGED → profile reload that would snap the toggle back.
+      setCurrentUser({ ...user, newsletterAccepted: next }, { notify: false });
       setUser({ ...user, newsletterAccepted: next });
       setNewsletterMsg(
         next

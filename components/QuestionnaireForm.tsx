@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { requestEmail } from "@/lib/email-client";
 import { markQuestionnaireDone } from "@/lib/questionnaire";
 
@@ -230,6 +230,10 @@ export function QuestionnaireForm({
   const [pmsSymptom, setPmsSymptom] = useState("");
   const [healthCondition, setHealthCondition] = useState("");
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  }, [step]);
 
   const progress = useMemo(() => Math.round((step / TOTAL_STEPS) * 100), [step]);
   const needsMaternityDetail = situation === "enceinte" || situation === "post-partum";

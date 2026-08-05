@@ -1,28 +1,31 @@
 import { getApiBase } from "@/lib/api";
 import type { Article } from "@/lib/articles";
+import { contentLanguage } from "@/lib/content-language";
 import type { Ebook } from "@/lib/ebooks";
 import type { DashArticle, DashEbook } from "@/lib/dashboard-store";
 
-function estimateReadTime(text: string) {
+function estimateReadTime(text: string, language: string) {
   const words = text.trim().split(/\s+/).filter(Boolean).length;
   const minutes = Math.max(3, Math.round(words / 180));
-  return `${minutes} min de lecture`;
+  return language === "ar" ? `${minutes} دقائق قراءة` : `${minutes} min de lecture`;
 }
 
 export function mapDashArticle(a: DashArticle): Article {
+  const language = contentLanguage(a.language);
   const bodyText = [a.introduction, ...a.sections.map((s) => s.text)].join(" ");
   return {
     id: a.id,
+    language,
     category: a.categories[0] || "Santé Globale",
     title: a.title,
     subtitle: a.subtitle,
     excerpt: a.introduction || a.subtitle || a.keyPoints[0] || "",
     date: a.createdAt,
-    readTime: estimateReadTime(bodyText),
+    readTime: estimateReadTime(bodyText, language),
     image: a.image || "/images/article-1.jpg",
     author: {
       name: a.author || "WELLNEST",
-      role: "Nutritionniste",
+      role: language === "ar" ? "أخصائية تغذية" : "Nutritionniste",
     },
     keyPoints: a.keyPoints,
     introduction: a.introduction,
@@ -37,6 +40,7 @@ export function mapDashArticle(a: DashArticle): Article {
 }
 
 export function mapDashEbook(e: DashEbook): Ebook {
+  const language = contentLanguage(e.language);
   const metaParts = [
     e.recipeMeta?.time,
     e.recipeMeta?.difficulty?.toUpperCase(),
@@ -45,20 +49,37 @@ export function mapDashEbook(e: DashEbook): Ebook {
 
   return {
     id: e.id,
+    language,
     category: e.categories[0] || (e.isRecipe ? "Recettes" : "Guides Pratiques"),
     title: e.title,
     subtitle: e.subtitle,
     description: e.about || e.subtitle,
-    pages: e.pages ? (e.pages.includes("page") ? e.pages : `${e.pages} pages`) : "",
+    pages: e.pages
+      ? e.pages.includes("page") || e.pages.includes("صفحة")
+        ? e.pages
+        : language === "ar"
+          ? `${e.pages} صفحات`
+          : `${e.pages} pages`
+      : "",
     date: e.createdAt,
-    image: "/images/article-1.jpg",
+    image: e.image || "/images/article-1.jpg",
     delivery:
       e.delivery === "immediate"
-        ? "Téléchargement immédiat"
-        : "Par mail après paiement",
+        ? language === "ar"
+          ? "تحميل فوري"
+          : "Téléchargement immédiat"
+        : language === "ar"
+          ? "بالبريد بعد الدفع"
+          : "Par mail après paiement",
     author: {
       name: e.author || "WELLNEST",
-      role: e.isRecipe ? "Recette" : "Nutritionniste",
+      role: e.isRecipe
+        ? language === "ar"
+          ? "وصفة"
+          : "Recette"
+        : language === "ar"
+          ? "أخصائية تغذية"
+          : "Nutritionniste",
     },
     highlights: e.highlights,
     introduction: e.about,
@@ -67,7 +88,11 @@ export function mapDashEbook(e: DashEbook): Ebook {
     productType: e.isRecipe ? "recipe" : "ebook",
     pricing: e.delivery === "email-after-pay" ? "paid" : "free",
     featured: e.featured,
-    label: e.featured ? "E-BOOK À LA UNE" : undefined,
+    label: e.featured
+      ? language === "ar"
+        ? "الكتاب المميز"
+        : "E-BOOK À LA UNE"
+      : undefined,
     isRecipe: e.isRecipe,
     meta: e.isRecipe ? metaParts.join(" — ") : undefined,
     cardAuthor: e.author || "WELLNEST",

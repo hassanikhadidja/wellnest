@@ -1,8 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { getCurrentUser, getToken } from "@/lib/api";
+import { useEffect, useId, useMemo, useState, type ReactNode } from "react";
+import { api, getCurrentUser, getToken } from "@/lib/api";
+import {
+  CONTENT_LANGUAGES,
+  contentLanguage,
+  contentLanguageLabel,
+  type ContentLanguage,
+} from "@/lib/content-language";
 import {
   CONTENT_CATEGORIES,
   type ContentCategory,
@@ -18,6 +24,7 @@ import {
   listToLines,
   newSection,
   deleteEmail,
+  getStore,
   refreshStore,
   saveArticle,
   saveEbook,
@@ -26,6 +33,10 @@ import {
   tagsFromInput,
   upsertEmail,
 } from "@/lib/dashboard-store";
+import {
+  getEmailAcceptance,
+  setEmailAcceptance,
+} from "@/lib/email-acceptance";
 
 type SectionId = "users" | "articles" | "ebooks" | "emails";
 
@@ -37,6 +48,7 @@ const emptyUser = (): Omit<DashUser, "id" | "createdAt"> & { id?: string } => ({
 });
 
 const emptyArticle = (): Omit<DashArticle, "id" | "createdAt"> & { id?: string } => ({
+  language: "fr",
   categories: [],
   image: "",
   title: "",
@@ -57,6 +69,7 @@ const emptyEmailForm = () => ({
 });
 
 const emptyEbook = (): Omit<DashEbook, "id" | "createdAt"> & { id?: string } => ({
+  language: "fr",
   featured: false,
   categories: [],
   isRecipe: false,
@@ -66,6 +79,7 @@ const emptyEbook = (): Omit<DashEbook, "id" | "createdAt"> & { id?: string } => 
   author: "",
   delivery: "immediate",
   pages: "",
+  image: "",
   pdfUrl: "",
   pdfFileName: "",
   highlights: [""],
@@ -92,6 +106,119 @@ function Field({
 
 const inputClass =
   "w-full rounded-lg border border-sand bg-cream/40 px-3 py-2 text-[13px] text-ink outline-none focus:border-olive";
+
+async function uploadAsset(file: File, folder: string, resourceType: "image" | "raw" = "image") {
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("folder", folder);
+  formData.append("resourceType", resourceType);
+  return api<{ url: string; fileName?: string }>("/upload", {
+    method: "POST",
+    auth: true,
+    formData,
+  });
+}
+
+function FilePickButton({
+  accept,
+  disabled,
+  label,
+  onFile,
+}: {
+  accept: string;
+  disabled?: boolean;
+  label: string;
+  onFile: (file: File) => void;
+}) {
+  const inputId = useId();
+
+  return (
+    <div className="mt-2">
+      <input
+        id={inputId}
+        type="file"
+        accept={accept}
+        disabled={disabled}
+        className="sr-only"
+        onChange={(e) => {
+          const input = e.currentTarget;
+          const file = input.files?.[0];
+          if (!file) return;
+          onFile(file);
+          input.value = "";
+        }}
+      />
+      <label
+        htmlFor={inputId}
+        className={`inline-flex cursor-pointer items-center justify-center rounded-full px-4 py-2 text-[11px] font-bold tracking-[0.06em] transition-colors ${
+          disabled
+            ? "cursor-not-allowed bg-sand text-ink/40"
+            : "bg-olive text-white hover:bg-olive-dark"
+        }`}
+      >
+        {label}
+      </label>
+    </div>
+  );
+}
+
+function ImageUrlField({
+  label,
+  value,
+  onChange,
+  folder,
+  onError,
+}: {
+  label: string;
+  value: string;
+  onChange: (url: string) => void;
+  folder: string;
+  onError: (msg: string) => void;
+}) {
+  const [uploading, setUploading] = useState(false);
+
+  return (
+    <div className="block">
+      <span className="mb-1 block text-[12px] font-semibold text-ink">{label}</span>
+      <input
+        className={inputClass}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder="https://..."
+      />
+      <FilePickButton
+        accept="image/*"
+        disabled={uploading}
+        label={uploading ? "UPLOAD…" : "CHOISIR UNE IMAGE"}
+        onFile={(file) => {
+          void (async () => {
+            setUploading(true);
+            try {
+              const uploaded = await uploadAsset(file, folder, "image");
+              onChange(uploaded.url);
+            } catch (err) {
+              onError(err instanceof Error ? err.message : "Échec upload image");
+            } finally {
+              setUploading(false);
+            }
+          })();
+        }}
+      />
+      <p className="mt-1 text-[11px] text-muted">
+        {uploading ? "Upload en cours…" : "Collez un lien ou choisissez une image depuis votre appareil"}
+      </p>
+      {value ? (
+        // Preview; remote Cloudinary URLs may vary
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={value}
+          alt=""
+          className="mt-2 h-20 w-auto max-w-full rounded-lg border border-sand object-cover"
+        />
+      ) : null}
+    </div>
+  );
+}
 
 function CategoryPicker({
   value,
@@ -120,6 +247,47 @@ function CategoryPicker({
         );
       })}
     </div>
+  );
+}
+
+function LanguagePicker({
+  value,
+  onChange,
+}: {
+  value: ContentLanguage;
+  onChange: (next: ContentLanguage) => void;
+}) {
+  return (
+    <div className="flex flex-wrap gap-2">
+      {CONTENT_LANGUAGES.map((lang) => {
+        const active = value === lang.id;
+        return (
+          <button
+            key={lang.id}
+            type="button"
+            onClick={() => onChange(lang.id)}
+            className={`rounded-full px-3 py-1 text-[11px] font-semibold ${
+              active ? "bg-olive text-white" : "bg-cream text-ink/70"
+            }`}
+          >
+            {lang.short} — {lang.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function LanguageBadge({ language }: { language?: string | null }) {
+  const lang = contentLanguage(language);
+  return (
+    <span
+      className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${
+        lang === "ar" ? "bg-brown/15 text-brown" : "bg-olive/15 text-olive"
+      }`}
+    >
+      {lang === "ar" ? "AR" : "FR"}
+    </span>
   );
 }
 
@@ -183,14 +351,27 @@ export function DashboardPanel() {
 
   useEffect(() => {
     void refresh();
-    const onUpdate = () => {
+    const syncFromCache = () => {
+      const token = Boolean(getToken());
+      const user = getCurrentUser();
+      setAuthed(token);
+      setIsAdmin(token && user?.role === "admin");
+      const store = getStore();
+      setUsers(store.users);
+      setArticles(store.articles);
+      setEbooks(store.ebooks);
+      setEmails(store.emails);
+    };
+    const onFocus = () => {
       void refresh();
     };
-    window.addEventListener("wellnest-store-updated", onUpdate);
-    window.addEventListener("storage", onUpdate);
+    window.addEventListener("wellnest-store-updated", syncFromCache);
+    window.addEventListener("storage", onFocus);
+    window.addEventListener("focus", onFocus);
     return () => {
-      window.removeEventListener("wellnest-store-updated", onUpdate);
-      window.removeEventListener("storage", onUpdate);
+      window.removeEventListener("wellnest-store-updated", syncFromCache);
+      window.removeEventListener("storage", onFocus);
+      window.removeEventListener("focus", onFocus);
     };
   }, []);
 
@@ -208,27 +389,16 @@ export function DashboardPanel() {
   };
 
   const emailRows = useMemo(() => {
-    type EmailRow = DashEmail & { virtual?: boolean };
-    const rows: EmailRow[] = emails.map((item) => ({ ...item }));
-    const seen = new Set(emails.map((e) => e.email.trim().toLowerCase()));
-
-    for (const user of users) {
-      const key = user.email.trim().toLowerCase();
-      if (seen.has(key)) continue;
-      seen.add(key);
-      rows.push({
-        id: `user-${user.id}`,
-        email: user.email,
-        name: user.name,
-        source: "account",
-        accepted: false,
-        createdAt: user.createdAt,
-        virtual: true,
-      });
-    }
-
-    return rows;
-  }, [emails, users]);
+    // Only real /newsletter contacts — every row can be deleted.
+    // Account users without a newsletter entry live under Utilisateurs.
+    return emails.map((item) => {
+      const override = getEmailAcceptance(item.email);
+      return {
+        ...item,
+        accepted: typeof override === "boolean" ? override : item.accepted,
+      };
+    });
+  }, [emails]);
 
   const sections = useMemo(
     () => [
@@ -392,18 +562,33 @@ export function DashboardPanel() {
                   <li key={article.id} className="rounded-xl border border-sand/70 p-3">
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div>
-                        <p className="text-[11px] font-bold uppercase tracking-wide text-olive">
-                          {article.categories.join(" • ") || "Sans catégorie"}
+                        <div className="flex flex-wrap items-center gap-2">
+                          <LanguageBadge language={article.language} />
+                          <p className="text-[11px] font-bold uppercase tracking-wide text-olive">
+                            {article.categories.join(" • ") || "Sans catégorie"}
+                          </p>
+                        </div>
+                        <h3
+                          className="mt-1 font-semibold text-ink"
+                          dir={contentLanguage(article.language) === "ar" ? "rtl" : "ltr"}
+                          lang={contentLanguage(article.language)}
+                        >
+                          {article.title}
+                        </h3>
+                        <p className="text-[12px] text-muted">
+                          {contentLanguageLabel(article.language)} — {article.createdAt} — Par{" "}
+                          {article.author || "—"}
                         </p>
-                        <h3 className="mt-1 font-semibold text-ink">{article.title}</h3>
-                        <p className="text-[12px] text-muted">{article.createdAt} — Par {article.author || "—"}</p>
                       </div>
                       <div className="flex gap-2">
                         <button
                           type="button"
                           className="text-[12px] font-semibold text-olive"
                           onClick={() => {
-                            setArticleForm(article);
+                            setArticleForm({
+                              ...article,
+                              language: contentLanguage(article.language),
+                            });
                             setKeyPointsText(listToLines(article.keyPoints));
                             setArticleTags(article.tags.join(", "));
                           }}
@@ -452,14 +637,27 @@ export function DashboardPanel() {
                   <li key={ebook.id} className="rounded-xl border border-sand/70 p-3">
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div>
-                        <p className="text-[11px] font-bold uppercase tracking-wide text-olive">
-                          {ebook.featured ? "E-BOOK À LA UNE • " : ""}
-                          {ebook.isRecipe ? "Recette • " : ""}
-                          {ebook.categories.join(" • ") || "Sans catégorie"}
-                        </p>
-                        <h3 className="mt-1 font-semibold text-ink">{ebook.title}</h3>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <LanguageBadge language={ebook.language} />
+                          <p className="text-[11px] font-bold uppercase tracking-wide text-olive">
+                            {ebook.featured ? "E-BOOK À LA UNE • " : ""}
+                            {ebook.isRecipe ? "Recette • " : ""}
+                            {ebook.categories.join(" • ") || "Sans catégorie"}
+                          </p>
+                        </div>
+                        <h3
+                          className="mt-1 font-semibold text-ink"
+                          dir={contentLanguage(ebook.language) === "ar" ? "rtl" : "ltr"}
+                          lang={contentLanguage(ebook.language)}
+                        >
+                          {ebook.title}
+                        </h3>
                         <p className="text-[12px] text-muted">
-                          {ebook.pages || "—"} pages — {ebook.delivery === "immediate" ? "Téléchargement immédiat" : "Par mail après paiement"} — {ebook.createdAt}
+                          {contentLanguageLabel(ebook.language)} — {ebook.pages || "—"} pages —{" "}
+                          {ebook.delivery === "immediate"
+                            ? "Téléchargement immédiat"
+                            : "Par mail après paiement"}{" "}
+                          — {ebook.createdAt}
                         </p>
                       </div>
                       <div className="flex gap-2">
@@ -469,6 +667,7 @@ export function DashboardPanel() {
                           onClick={() => {
                             setEbookForm({
                               ...ebook,
+                              language: contentLanguage(ebook.language),
                               recipeMeta: ebook.recipeMeta ?? { time: "", difficulty: "facile", people: "" },
                             });
                             setHighlightsText(listToLines(ebook.highlights));
@@ -500,7 +699,8 @@ export function DashboardPanel() {
                 <div>
                   <h1 className="font-display text-2xl font-semibold text-ink">Emails</h1>
                   <p className="mt-1 text-[13px] text-muted">
-                    Ajoutez, supprimez ou modifiez l&apos;acceptation des emails (Oui / Non).
+                    Contacts newsletter et compte inscrits. Cliquez sur Oui / Non pour l&apos;acceptation,
+                    ou Supprimer pour retirer un contact.
                   </p>
                 </div>
                 <button
@@ -546,20 +746,41 @@ export function DashboardPanel() {
                             type="button"
                             disabled={busy || !authed}
                             title="Modifier l'acceptation"
-                            onClick={() =>
-                              void run(async () => {
-                                if (item.virtual) {
-                                  await upsertEmail({
+                            onClick={() => {
+                              const next = !item.accepted;
+                              // Optimistic UI — do not full-refresh (API ignores accepted).
+                              setEmailAcceptance(item.email, next);
+                              setEmails((prev) =>
+                                prev.map((e) =>
+                                  e.id === item.id ||
+                                  e.email.trim().toLowerCase() ===
+                                    item.email.trim().toLowerCase()
+                                    ? { ...e, accepted: next }
+                                    : e
+                                )
+                              );
+
+                              void (async () => {
+                                setBusy(true);
+                                setError("");
+                                try {
+                                  await setEmailAccepted(item.id, next, {
                                     email: item.email,
                                     name: item.name,
-                                    source: "account",
-                                    accepted: true,
+                                    source: item.source,
                                   });
-                                  return;
+                                  setEmails(getStore().emails);
+                                } catch (e) {
+                                  setError(
+                                    e instanceof Error
+                                      ? e.message
+                                      : "Impossible de modifier l'acceptation."
+                                  );
+                                } finally {
+                                  setBusy(false);
                                 }
-                                await setEmailAccepted(item.id, !item.accepted);
-                              })
-                            }
+                              })();
+                            }}
                             className={`rounded-full px-2.5 py-1 text-[11px] font-bold tracking-wide transition-colors disabled:opacity-50 ${
                               item.accepted
                                 ? "bg-olive/15 text-olive hover:bg-olive/25"
@@ -571,18 +792,19 @@ export function DashboardPanel() {
                         </td>
                         <td className="py-3 text-muted">{item.createdAt || "—"}</td>
                         <td className="py-3">
-                          {!item.virtual ? (
-                            <button
-                              type="button"
-                              disabled={busy || !authed}
-                              className="text-[12px] font-semibold text-red-700 disabled:opacity-50"
-                              onClick={() => void run(() => deleteEmail(item.id))}
-                            >
-                              Supprimer
-                            </button>
-                          ) : (
-                            <span className="text-[12px] text-muted">—</span>
-                          )}
+                          <button
+                            type="button"
+                            disabled={busy || !authed}
+                            className="text-[12px] font-semibold text-red-700 disabled:opacity-50"
+                            onClick={() =>
+                              void run(async () => {
+                                await deleteEmail(item.id);
+                                setEmails(getStore().emails);
+                              })
+                            }
+                          >
+                            Supprimer
+                          </button>
                         </td>
                       </tr>
                     ))}
@@ -722,17 +944,34 @@ export function DashboardPanel() {
               });
             }}
           >
+            <Field label="Langue">
+              <LanguagePicker
+                value={contentLanguage(articleForm.language)}
+                onChange={(language) => setArticleForm({ ...articleForm, language })}
+              />
+            </Field>
             <Field label="Catégories (une ou plusieurs)">
               <CategoryPicker
                 value={articleForm.categories}
                 onChange={(categories) => setArticleForm({ ...articleForm, categories })}
               />
             </Field>
-            <Field label="Image (URL)">
-              <input className={inputClass} value={articleForm.image} onChange={(e) => setArticleForm({ ...articleForm, image: e.target.value })} placeholder="https://..." />
-            </Field>
+            <ImageUrlField
+              label="Image (URL ou appareil)"
+              value={articleForm.image}
+              folder="articles"
+              onChange={(image) => setArticleForm({ ...articleForm, image })}
+              onError={setError}
+            />
             <Field label="Titre">
-              <input className={inputClass} required value={articleForm.title} onChange={(e) => setArticleForm({ ...articleForm, title: e.target.value })} />
+              <input
+                className={inputClass}
+                required
+                dir={contentLanguage(articleForm.language) === "ar" ? "rtl" : "ltr"}
+                lang={contentLanguage(articleForm.language)}
+                value={articleForm.title}
+                onChange={(e) => setArticleForm({ ...articleForm, title: e.target.value })}
+              />
             </Field>
             <Field label="Sous-titre">
               <input className={inputClass} value={articleForm.subtitle} onChange={(e) => setArticleForm({ ...articleForm, subtitle: e.target.value })} />
@@ -789,10 +1028,18 @@ export function DashboardPanel() {
                     const sections = articleForm.sections.map((s) => (s.id === section.id ? { ...s, text: e.target.value } : s));
                     setArticleForm({ ...articleForm, sections });
                   }} />
-                  <input className={inputClass} placeholder="Image URL" value={section.image} onChange={(e) => {
-                    const sections = articleForm.sections.map((s) => (s.id === section.id ? { ...s, image: e.target.value } : s));
-                    setArticleForm({ ...articleForm, sections });
-                  }} />
+                  <ImageUrlField
+                    label="Image section (URL ou appareil)"
+                    value={section.image}
+                    folder="articles"
+                    onChange={(image) => {
+                      const sections = articleForm.sections.map((s) =>
+                        s.id === section.id ? { ...s, image } : s
+                      );
+                      setArticleForm({ ...articleForm, sections });
+                    }}
+                    onError={setError}
+                  />
                 </div>
               ))}
             </div>
@@ -841,6 +1088,12 @@ export function DashboardPanel() {
               />
               E-BOOK À LA UNE
             </label>
+            <Field label="Langue">
+              <LanguagePicker
+                value={contentLanguage(ebookForm.language)}
+                onChange={(language) => setEbookForm({ ...ebookForm, language })}
+              />
+            </Field>
             <Field label="Catégories (une ou plusieurs)">
               <CategoryPicker
                 value={ebookForm.categories}
@@ -885,10 +1138,23 @@ export function DashboardPanel() {
               </div>
             )}
             <Field label="Titre">
-              <input className={inputClass} required value={ebookForm.title} onChange={(e) => setEbookForm({ ...ebookForm, title: e.target.value })} />
+              <input
+                className={inputClass}
+                required
+                dir={contentLanguage(ebookForm.language) === "ar" ? "rtl" : "ltr"}
+                lang={contentLanguage(ebookForm.language)}
+                value={ebookForm.title}
+                onChange={(e) => setEbookForm({ ...ebookForm, title: e.target.value })}
+              />
             </Field>
             <Field label="Sous-titre">
-              <input className={inputClass} value={ebookForm.subtitle} onChange={(e) => setEbookForm({ ...ebookForm, subtitle: e.target.value })} />
+              <input
+                className={inputClass}
+                dir={contentLanguage(ebookForm.language) === "ar" ? "rtl" : "ltr"}
+                lang={contentLanguage(ebookForm.language)}
+                value={ebookForm.subtitle}
+                onChange={(e) => setEbookForm({ ...ebookForm, subtitle: e.target.value })}
+              />
             </Field>
             <Field label="Par...">
               <input className={inputClass} value={ebookForm.author} onChange={(e) => setEbookForm({ ...ebookForm, author: e.target.value })} />
@@ -906,29 +1172,24 @@ export function DashboardPanel() {
             <Field label="Nombre de pages">
               <input className={inputClass} value={ebookForm.pages} onChange={(e) => setEbookForm({ ...ebookForm, pages: e.target.value })} />
             </Field>
+            <ImageUrlField
+              label="Couverture (URL ou appareil)"
+              value={ebookForm.image}
+              folder="ebooks"
+              onChange={(image) => setEbookForm({ ...ebookForm, image })}
+              onError={setError}
+            />
             <Field label="PDF — lien GitHub / URL">
               <input className={inputClass} value={ebookForm.pdfUrl} onChange={(e) => setEbookForm({ ...ebookForm, pdfUrl: e.target.value })} placeholder="https://github.com/.../file.pdf" />
             </Field>
             <Field label="PDF — fichier">
-              <input
-                type="file"
+              <FilePickButton
                 accept="application/pdf"
-                className="block w-full text-[12px]"
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (!file) return;
+                label="CHOISIR UN PDF"
+                onFile={(file) => {
                   void (async () => {
                     try {
-                      const { api } = await import("@/lib/api");
-                      const formData = new FormData();
-                      formData.append("file", file);
-                      formData.append("folder", "ebooks");
-                      formData.append("resourceType", "raw");
-                      const uploaded = await api<{ url: string; fileName?: string }>("/upload", {
-                        method: "POST",
-                        auth: true,
-                        formData,
-                      });
+                      const uploaded = await uploadAsset(file, "ebooks", "raw");
                       setEbookForm({
                         ...ebookForm,
                         pdfFileName: uploaded.fileName || file.name,
@@ -940,7 +1201,9 @@ export function DashboardPanel() {
                   })();
                 }}
               />
-              {ebookForm.pdfFileName && <p className="mt-1 text-[11px] text-muted">Fichier : {ebookForm.pdfFileName}</p>}
+              {ebookForm.pdfFileName && (
+                <p className="mt-1 text-[11px] text-muted">Fichier : {ebookForm.pdfFileName}</p>
+              )}
             </Field>
             <Field label="Ce que vous allez trouver (1 par ligne)">
               <textarea className={`${inputClass} min-h-[80px]`} value={highlightsText} onChange={(e) => setHighlightsText(e.target.value)} />

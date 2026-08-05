@@ -4,10 +4,16 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { articleCategories, articles, type Article, resolveArticles } from "@/lib/articles";
+import {
+  CONTENT_LANGUAGES,
+  contentLanguage,
+  type ContentLanguage,
+} from "@/lib/content-language";
 
 export function ArticlesListing() {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<(typeof articleCategories)[number]>("Tous");
+  const [language, setLanguage] = useState<ContentLanguage | "all">("all");
   const [items, setItems] = useState<Article[]>(articles);
 
   useEffect(() => {
@@ -17,15 +23,17 @@ export function ArticlesListing() {
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     return items.filter((article) => {
+      const matchLanguage =
+        language === "all" || contentLanguage(article.language) === language;
       const matchCategory = category === "Tous" || article.category === category;
       const matchQuery =
         !q ||
         article.title.toLowerCase().includes(q) ||
         article.excerpt.toLowerCase().includes(q) ||
         article.category.toLowerCase().includes(q);
-      return matchCategory && matchQuery;
+      return matchLanguage && matchCategory && matchQuery;
     });
-  }, [category, query, items]);
+  }, [category, language, query, items]);
 
   return (
     <div className="bg-white pb-8 pt-4 max-[999px]:pb-6">
@@ -89,6 +97,32 @@ export function ArticlesListing() {
           />
         </label>
 
+        {/* Language tabs */}
+        <div className="mb-3 flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {(
+            [
+              { id: "all" as const, label: "Toutes les langues" },
+              ...CONTENT_LANGUAGES.map((item) => ({ id: item.id, label: item.label })),
+            ] as const
+          ).map((item) => {
+            const active = item.id === language;
+            return (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => setLanguage(item.id)}
+                className={`shrink-0 rounded-full px-3.5 py-1.5 text-[12px] font-semibold transition-colors ${
+                  active
+                    ? "bg-olive text-white"
+                    : "border border-sand bg-white text-ink/70 hover:border-olive/40 hover:text-olive"
+                }`}
+              >
+                {item.label}
+              </button>
+            );
+          })}
+        </div>
+
         {/* Category tabs */}
         <div className="mb-4 flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {articleCategories.map((item) => {
@@ -139,9 +173,20 @@ export function ArticlesListing() {
                 </Link>
                 <div className="min-w-0 flex-1">
                   <div className="mb-1 flex items-start justify-between gap-2">
-                    <span className="rounded-full bg-cream px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-olive">
-                      {article.category}
-                    </span>
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <span className="rounded-full bg-cream px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-olive">
+                        {article.category}
+                      </span>
+                      <span
+                        className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${
+                          contentLanguage(article.language) === "ar"
+                            ? "bg-brown/15 text-brown"
+                            : "bg-olive/15 text-olive"
+                        }`}
+                      >
+                        {contentLanguage(article.language) === "ar" ? "AR" : "FR"}
+                      </span>
+                    </div>
                     <button
                       type="button"
                       className="shrink-0 text-ink/35 transition-colors hover:text-olive"
@@ -158,11 +203,19 @@ export function ArticlesListing() {
                     </button>
                   </div>
                   <Link href={`/articles/${article.id}`}>
-                    <h2 className="text-[14px] font-bold leading-snug text-ink hover:text-olive">
+                    <h2
+                      className="text-[14px] font-bold leading-snug text-ink hover:text-olive"
+                      dir={contentLanguage(article.language) === "ar" ? "rtl" : "ltr"}
+                      lang={contentLanguage(article.language)}
+                    >
                       {article.title}
                     </h2>
                   </Link>
-                  <p className="mt-1 line-clamp-2 text-[12px] leading-relaxed text-muted">
+                  <p
+                    className="mt-1 line-clamp-2 text-[12px] leading-relaxed text-muted"
+                    dir={contentLanguage(article.language) === "ar" ? "rtl" : "ltr"}
+                    lang={contentLanguage(article.language)}
+                  >
                     {article.excerpt}
                   </p>
                   <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-muted">

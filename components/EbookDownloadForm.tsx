@@ -1,13 +1,16 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
+import { ebookUi, type ContentLanguage } from "@/lib/content-language";
 
 type Props = {
   ebookId: string;
+  language?: ContentLanguage | string | null;
   variant?: "primary" | "inverse";
 };
 
-export function EbookDownloadForm({ ebookId, variant = "primary" }: Props) {
+export function EbookDownloadForm({ ebookId, language, variant = "primary" }: Props) {
+  const ui = ebookUi(language);
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "done" | "error">("idle");
@@ -27,15 +30,15 @@ export function EbookDownloadForm({ ebookId, variant = "primary" }: Props) {
         const data = (await res.json().catch(() => null)) as { error?: string } | null;
         if (!res.ok) {
           setStatus("error");
-          setMessage(data?.error || "Impossible d'envoyer le e-book.");
+          setMessage(data?.error || ui.sendError);
           return;
         }
         setStatus("done");
-        setMessage("Le lien de téléchargement a été envoyé à votre e-mail.");
+        setMessage(ui.sentOk);
         setEmail("");
       } catch {
         setStatus("error");
-        setMessage("Impossible d'envoyer le e-book.");
+        setMessage(ui.sendError);
       }
     })();
   };
@@ -53,7 +56,7 @@ export function EbookDownloadForm({ ebookId, variant = "primary" }: Props) {
   if (!open && status !== "done") {
     return (
       <button type="button" className={buttonClass} onClick={() => setOpen(true)}>
-        {variant === "inverse" ? "TÉLÉCHARGER MAINTENANT" : "TÉLÉCHARGER LE E-BOOK"}
+        {variant === "inverse" ? ui.downloadNow : ui.downloadEbook}
         <span aria-hidden>↓</span>
       </button>
     );
@@ -74,7 +77,7 @@ export function EbookDownloadForm({ ebookId, variant = "primary" }: Props) {
       ) : (
         <form className="flex w-full max-w-md flex-col gap-2 sm:flex-row sm:items-center" onSubmit={onSubmit}>
           <label htmlFor={`ebook-email-${ebookId}-${variant}`} className="sr-only">
-            Adresse e-mail
+            {ui.emailLabel}
           </label>
           <input
             id={`ebook-email-${ebookId}-${variant}`}
@@ -83,7 +86,7 @@ export function EbookDownloadForm({ ebookId, variant = "primary" }: Props) {
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="Votre e-mail"
+            placeholder={ui.emailPlaceholder}
             className={inputClass}
           />
           <button
@@ -91,7 +94,7 @@ export function EbookDownloadForm({ ebookId, variant = "primary" }: Props) {
             disabled={status === "loading"}
             className={buttonClass}
           >
-            {status === "loading" ? "ENVOI…" : "RECEVOIR PAR E-MAIL"}
+            {status === "loading" ? ui.sending : ui.receiveByEmail}
           </button>
         </form>
       )}

@@ -2,7 +2,8 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { AUTH_CHANGED_EVENT, getCurrentUser, type AuthUser } from "@/lib/api";
 
 const navLinks = [
@@ -16,8 +17,12 @@ const navLinks = [
 ];
 
 export function Header() {
+  const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const [user, setUser] = useState<AuthUser | null>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const sync = () => setUser(getCurrentUser());
@@ -39,7 +44,34 @@ export function Header() {
     };
   }, [menuOpen]);
 
+  useEffect(() => {
+    if (!searchOpen) return;
+    searchInputRef.current?.focus();
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setSearchOpen(false);
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [searchOpen]);
+
   const isAdmin = user?.role === "admin";
+
+  function submitSearch(e: FormEvent) {
+    e.preventDefault();
+    const q = searchQuery.trim();
+    if (!q) {
+      searchInputRef.current?.focus();
+      return;
+    }
+    setSearchOpen(false);
+    setMenuOpen(false);
+    router.push(`/recherche?q=${encodeURIComponent(q)}`);
+  }
+
+  function openSearch() {
+    setMenuOpen(false);
+    setSearchOpen(true);
+  }
 
   return (
     <header className="sticky top-0 z-50 overflow-visible border-b border-sand/60 bg-white/95 backdrop-blur-sm">
@@ -137,8 +169,11 @@ export function Header() {
 
           <button
             type="button"
-            className="hidden rounded-full p-2 text-ink/70 transition-colors hover:bg-cream hover:text-olive min-[1000px]:inline-flex"
+            className="rounded-full p-2 text-ink/70 transition-colors hover:bg-cream hover:text-olive"
             aria-label="Rechercher"
+            aria-expanded={searchOpen}
+            aria-controls="header-search-panel"
+            onClick={() => (searchOpen ? setSearchOpen(false) : openSearch())}
           >
             <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden>
               <circle cx="11" cy="11" r="6.5" stroke="currentColor" strokeWidth="1.6" />
@@ -183,6 +218,53 @@ export function Header() {
             )}
           </button>
         </div>
+      </div>
+
+      <div
+        id="header-search-panel"
+        className={`relative z-50 overflow-hidden border-t border-sand/60 bg-white transition-[max-height,opacity] duration-300 ease-out ${
+          searchOpen ? "max-h-28 opacity-100" : "max-h-0 opacity-0"
+        }`}
+      >
+        <form
+          onSubmit={submitSearch}
+          className="mx-auto flex max-w-[1280px] items-center gap-2 px-4 py-3 min-[1000px]:px-8"
+          role="search"
+        >
+          <label className="relative min-w-0 flex-1">
+            <span className="sr-only">Rechercher sur Wellnest</span>
+            <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-muted">
+              <svg viewBox="0 0 20 20" className="h-4 w-4" fill="none" aria-hidden>
+                <circle cx="9" cy="9" r="5.5" stroke="currentColor" strokeWidth="1.4" />
+                <path d="M13 13L17 17" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+              </svg>
+            </span>
+            <input
+              ref={searchInputRef}
+              type="search"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Rechercher articles, guides, recettes…"
+              className="w-full rounded-full border border-sand bg-cream/60 py-2.5 pl-10 pr-4 text-[13px] text-ink outline-none placeholder:text-muted focus:border-olive focus:ring-1 focus:ring-olive/30"
+            />
+          </label>
+          <button
+            type="submit"
+            className="shrink-0 rounded-full bg-olive px-4 py-2.5 text-[11px] font-semibold tracking-[0.06em] text-white transition-colors hover:bg-olive-dark"
+          >
+            Chercher
+          </button>
+          <button
+            type="button"
+            onClick={() => setSearchOpen(false)}
+            className="shrink-0 rounded-full p-2 text-ink/60 transition-colors hover:bg-cream hover:text-olive"
+            aria-label="Fermer la recherche"
+          >
+            <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden>
+              <path d="M6 6L18 18M18 6L6 18" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+            </svg>
+          </button>
+        </form>
       </div>
 
       <div

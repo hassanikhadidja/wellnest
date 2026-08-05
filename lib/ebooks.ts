@@ -1,3 +1,5 @@
+import type { ContentLanguage } from "@/lib/content-language";
+
 export type ProductType = "ebook" | "recipe" | "grocery";
 export type Pricing = "free" | "paid";
 
@@ -20,6 +22,8 @@ export const sortFilters: { id: SortFilter; label: string }[] = [
 
 export type Ebook = {
   id: string;
+  /** Defaults to French when omitted on legacy static entries */
+  language?: ContentLanguage;
   category: string;
   title: string;
   subtitle: string;
@@ -518,6 +522,37 @@ export const ebooks: Ebook[] = [
       "Compléments alimentaires courants",
     ],
     tip: "Priorisez les protéines et les féculents complets avant les snacks.",
+  },
+  {
+    id: "ar-1",
+    language: "ar",
+    category: "Nutrition Maman",
+    title: "الدليل الكامل لتغذية الحمل",
+    subtitle: "كل ما تحتاجينه لتغذية صحية، ودعم جنينك، والعناية بنفسك.",
+    description: "كل ما تحتاجينه لتغذية صحية، ودعم جنينك، والعناية بنفسك.",
+    pages: "45 صفحات",
+    date: "أوت 2026",
+    image: "/images/article-1.jpg",
+    delivery: "تحميل فوري",
+    author: { name: "د. ليلى بنيامنة", role: "أخصائية تغذية" },
+    productType: "ebook",
+    pricing: "paid",
+    highlights: [
+      "قوائم وجبات حسب كل فصل من الحمل",
+      "قوائم تسوق جاهزة للاستخدام",
+      "نصائح للغثيان والرغبة الشديدة في الأكل",
+      "وصفات بسيطة ومغذية",
+    ],
+    introduction:
+      "يرافقك هذا الدليل طوال فترة الحمل بنصائح عملية، وأفكار وجبات، ومراجع غذائية واضحة لكِ ولجنينك.",
+    contents: [
+      "الاحتياجات الغذائية حسب الفصل",
+      "أطعمة يُفضَّل التركيز عليها وأخرى للتقليل",
+      "خطط وجبات أسبوعية",
+      "وصفات سريعة وقوائم تسوق",
+      "أسئلة شائعة حول الحمل والتغذية",
+    ],
+    tip: "حمّلي الدليل واحتفظي به قريباً أثناء التسوق وتحضير وجبات الأسبوع.",
   },
 ];
 

@@ -1,14 +1,21 @@
 import Image from "next/image";
 import Link from "next/link";
 import { EbookDownloadForm } from "@/components/EbookDownloadForm";
+import { contentLanguage, ebookUi } from "@/lib/content-language";
 import type { Ebook } from "@/lib/ebooks";
 
 export function EbookDetail({ ebook }: { ebook: Ebook }) {
+  const language = contentLanguage(ebook.language);
+  const ui = ebookUi(language);
   const shortCrumb =
     ebook.title.length > 28 ? `${ebook.title.slice(0, 28)}…` : ebook.title;
 
   return (
-    <article className="bg-white pb-10 pt-4">
+    <article
+      className="bg-white pb-10 pt-4"
+      dir={language === "ar" ? "rtl" : "ltr"}
+      lang={language}
+    >
       <div className="mx-auto max-w-[760px] px-4 sm:px-6">
         {/* Breadcrumbs */}
         <nav className="mb-5 flex flex-wrap items-center gap-1.5 text-[12px] text-muted" aria-label="Fil d'Ariane">
@@ -67,7 +74,9 @@ export function EbookDetail({ ebook }: { ebook: Ebook }) {
               />
             </span>
             <div className="leading-tight">
-              <p className="font-semibold text-ink">Par {ebook.author.name}</p>
+              <p className="font-semibold text-ink">
+                {ui.by} {ebook.author.name}
+              </p>
               <p className="text-[11px]">{ebook.author.role}</p>
             </div>
           </div>
@@ -99,7 +108,7 @@ export function EbookDetail({ ebook }: { ebook: Ebook }) {
 
         {/* CTA */}
         <div className="mt-5">
-          <EbookDownloadForm ebookId={ebook.id} variant="primary" />
+          <EbookDownloadForm ebookId={ebook.id} language={language} variant="primary" />
         </div>
 
         {/* Highlights */}
@@ -115,7 +124,7 @@ export function EbookDetail({ ebook }: { ebook: Ebook }) {
                 />
               </svg>
             </span>
-            <h2 className="font-display text-lg font-semibold text-ink">Ce que vous allez trouver</h2>
+            <h2 className="font-display text-lg font-semibold text-ink">{ui.highlights}</h2>
           </div>
           <ul className="space-y-2.5">
             {ebook.highlights.map((point) => (
@@ -133,13 +142,13 @@ export function EbookDetail({ ebook }: { ebook: Ebook }) {
 
         {/* Introduction */}
         <section className="mt-7">
-          <h2 className="font-display text-xl font-semibold text-ink">À propos de ce guide</h2>
+          <h2 className="font-display text-xl font-semibold text-ink">{ui.about}</h2>
           <p className="mt-2 text-[14px] leading-relaxed text-ink/85">{ebook.introduction}</p>
         </section>
 
         {/* Contents */}
         <section className="mt-7">
-          <h2 className="font-display text-xl font-semibold text-ink">Sommaire</h2>
+          <h2 className="font-display text-xl font-semibold text-ink">{ui.contents}</h2>
           <ol className="mt-3 space-y-2.5">
             {ebook.contents.map((item, index) => (
               <li
@@ -168,19 +177,17 @@ export function EbookDetail({ ebook }: { ebook: Ebook }) {
             </svg>
           </span>
           <div>
-            <p className="text-[12px] font-bold uppercase tracking-wide text-olive">Conseil</p>
+            <p className="text-[12px] font-bold uppercase tracking-wide text-olive">{ui.tip}</p>
             <p className="mt-0.5 text-[13px] leading-relaxed text-ink/85">{ebook.tip}</p>
           </div>
         </aside>
 
         {/* Bottom CTA */}
         <div className="mt-8 rounded-2xl bg-olive p-5 text-white">
-          <h2 className="font-display text-xl font-semibold">Prêt(e) à commencer ?</h2>
-          <p className="mt-1.5 text-[13px] text-white/85">
-            Téléchargez ce e-book et appliquez les conseils dès aujourd&apos;hui.
-          </p>
+          <h2 className="font-display text-xl font-semibold">{ui.ctaTitle}</h2>
+          <p className="mt-1.5 text-[13px] text-white/85">{ui.ctaText}</p>
           <div className="mt-4">
-            <EbookDownloadForm ebookId={ebook.id} variant="inverse" />
+            <EbookDownloadForm ebookId={ebook.id} language={language} variant="inverse" />
           </div>
         </div>
       </div>

@@ -1,7 +1,11 @@
 export async function requestEmail(
-  path: "/api/email/newsletter" | "/api/email/questionnaire" | "/api/email/ebook",
+  path:
+    | "/api/email/newsletter"
+    | "/api/email/questionnaire"
+    | "/api/email/ebook"
+    | "/api/email/account",
   body: Record<string, unknown>
-): Promise<void> {
+): Promise<boolean> {
   try {
     const res = await fetch(path, {
       method: "POST",
@@ -11,8 +15,11 @@ export async function requestEmail(
     if (!res.ok) {
       const data = (await res.json().catch(() => null)) as { error?: string } | null;
       console.error(`Email request failed (${path}):`, data?.error || res.statusText);
+      return false;
     }
+    return true;
   } catch (err) {
     console.error(`Email request error (${path}):`, err);
+    return false;
   }
 }

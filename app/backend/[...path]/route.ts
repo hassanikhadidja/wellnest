@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const DEFAULT_API = "https://wellnest-backend-p95c.vercel.app";
+const DEFAULT_API =
+  "https://wellnest-backend-eui970c78-hassanikhadidjas-projects.vercel.app";
 
 function apiBase() {
   return (

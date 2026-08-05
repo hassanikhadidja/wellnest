@@ -14,6 +14,16 @@ export function getNewsletterOptIn(email: string): boolean {
   }
 }
 
+/** Whether a newsletter preference was explicitly stored for this email. */
+export function hasNewsletterOptIn(email: string): boolean {
+  if (typeof window === "undefined") return false;
+  try {
+    return window.localStorage.getItem(newsletterStorageKey(email)) !== null;
+  } catch {
+    return false;
+  }
+}
+
 export function setNewsletterOptIn(email: string, value: boolean) {
   if (typeof window === "undefined") return;
   try {

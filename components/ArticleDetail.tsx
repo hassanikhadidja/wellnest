@@ -1,13 +1,20 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { Article } from "@/lib/articles";
+import { articleUi, contentLanguage } from "@/lib/content-language";
 
 export function ArticleDetail({ article }: { article: Article }) {
+  const language = contentLanguage(article.language);
+  const ui = articleUi(language);
   const shortCrumb =
     article.title.length > 28 ? `${article.title.slice(0, 28)}…` : article.title;
 
   return (
-    <article className="bg-white pb-10 pt-4">
+    <article
+      className="bg-white pb-10 pt-4"
+      dir={language === "ar" ? "rtl" : "ltr"}
+      lang={language}
+    >
       <div className="mx-auto max-w-[760px] px-4 sm:px-6">
         {/* Breadcrumbs */}
         <nav className="mb-5 flex flex-wrap items-center gap-1.5 text-[12px] text-muted" aria-label="Fil d'Ariane">
@@ -66,7 +73,9 @@ export function ArticleDetail({ article }: { article: Article }) {
               />
             </span>
             <div className="leading-tight">
-              <p className="font-semibold text-ink">Par {article.author.name}</p>
+              <p className="font-semibold text-ink">
+                {ui.by} {article.author.name}
+              </p>
               <p className="text-[11px]">{article.author.role}</p>
             </div>
           </div>
@@ -101,7 +110,7 @@ export function ArticleDetail({ article }: { article: Article }) {
                 />
               </svg>
             </span>
-            <h2 className="font-display text-lg font-semibold text-ink">Points clés à retenir</h2>
+            <h2 className="font-display text-lg font-semibold text-ink">{ui.keyPoints}</h2>
           </div>
           <ul className="space-y-2.5">
             {article.keyPoints.map((point) => (
@@ -119,7 +128,7 @@ export function ArticleDetail({ article }: { article: Article }) {
 
         {/* Introduction */}
         <section className="mt-7">
-          <h2 className="font-display text-xl font-semibold text-ink">Introduction</h2>
+          <h2 className="font-display text-xl font-semibold text-ink">{ui.introduction}</h2>
           <p className="mt-2 text-[14px] leading-relaxed text-ink/85">{article.introduction}</p>
         </section>
 
@@ -164,7 +173,7 @@ export function ArticleDetail({ article }: { article: Article }) {
             </svg>
           </span>
           <div>
-            <p className="text-[12px] font-bold uppercase tracking-wide text-olive">Conseil</p>
+            <p className="text-[12px] font-bold uppercase tracking-wide text-olive">{ui.tip}</p>
             <p className="mt-0.5 text-[13px] leading-relaxed text-ink/85">{article.tip}</p>
           </div>
         </aside>
@@ -182,9 +191,7 @@ export function ArticleDetail({ article }: { article: Article }) {
                 />
               </svg>
             </span>
-            <p className="text-[13px] leading-snug text-ink/85">
-              Cet article vous a-t-il été utile ? Partagez-le avec d&apos;autres futures mamans.
-            </p>
+            <p className="text-[13px] leading-snug text-ink/85">{ui.sharePrompt}</p>
           </div>
           <div className="flex items-center gap-2">
             {["WhatsApp", "Facebook", "Copier le lien"].map((label) => (

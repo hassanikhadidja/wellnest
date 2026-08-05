@@ -7,10 +7,22 @@ import {
   type AuthUser,
 } from "@/lib/api";
 import {
+  contentLanguage,
+  type ContentLanguage,
+} from "@/lib/content-language";
+import {
+  clearEmailAcceptance,
+  resolveEmailAcceptance,
+  setEmailAcceptance,
+} from "@/lib/email-acceptance";
+import {
   getNewsletterOptIn,
+  hasNewsletterOptIn,
   readAcceptedFlag,
   setNewsletterOptIn,
 } from "@/lib/newsletter-preference";
+
+export type { ContentLanguage } from "@/lib/content-language";
 
 export const CONTENT_CATEGORIES = [
   "Nutrition Maman",
@@ -42,6 +54,7 @@ export type ArticleSection = {
 
 export type DashArticle = {
   id: string;
+  language: ContentLanguage;
   categories: ContentCategory[];
   image: string;
   title: string;
@@ -63,6 +76,7 @@ export type RecipeMeta = {
 
 export type DashEbook = {
   id: string;
+  language: ContentLanguage;
   featured: boolean;
   categories: ContentCategory[];
   isRecipe: boolean;
@@ -72,6 +86,8 @@ export type DashEbook = {
   author: string;
   delivery: "immediate" | "email-after-pay";
   pages: string;
+  /** Cover image URL */
+  image: string;
   pdfUrl: string;
   pdfFileName: string;
   highlights: string[];
@@ -134,8 +150,12 @@ function readCache(): Store {
     const parsed = JSON.parse(raw) as Partial<Store>;
     return {
       users: parsed.users ?? [],
-      articles: parsed.articles ?? [],
-      ebooks: parsed.ebooks ?? [],
+      articles: (parsed.articles ?? []).map((item) =>
+        asDashArticle(item as DashArticle & { id: string })
+      ),
+      ebooks: (parsed.ebooks ?? []).map((item) =>
+        asDashEbook(item as DashEbook & { id: string })
+      ),
       emails: (parsed.emails ?? []).map((item) =>
         asDashEmail(item as DashEmail & { id: string; email: string })
       ),
@@ -155,6 +175,66 @@ function asDashUser(u: Omit<DashUser, "password"> & { password?: string }): Dash
   return { ...u, password: u.password ?? "" };
 }
 
+function asDashArticle(item: Partial<DashArticle> & { id: string }): DashArticle {
+  return {
+    id: String(item.id),
+    language: contentLanguage(item.language),
+    categories: Array.isArray(item.categories) ? item.categories : [],
+    image: item.image ?? "",
+    title: item.title ?? "",
+    subtitle: item.subtitle ?? "",
+    keyPoints: Array.isArray(item.keyPoints) ? item.keyPoints : [],
+    author: item.author ?? "",
+    introduction: item.introduction ?? "",
+    sections: Array.isArray(item.sections) ? item.sections : [],
+    tip: item.tip ?? "",
+    tags: Array.isArray(item.tags) ? item.tags : [],
+    createdAt: item.createdAt ? String(item.createdAt) : "",
+  };
+}
+
+function asDashEbook(item: Partial<DashEbook> & { id: string }): DashEbook {
+  return {
+    id: String(item.id),
+    language: contentLanguage(item.language),
+    featured: Boolean(item.featured),
+    categories: Array.isArray(item.categories) ? item.categories : [],
+    isRecipe: Boolean(item.isRecipe),
+    recipeMeta: item.recipeMeta,
+    title: item.title ?? "",
+    subtitle: item.subtitle ?? "",
+    author: item.author ?? "",
+    delivery: item.delivery === "email-after-pay" ? "email-after-pay" : "immediate",
+    pages: item.pages ?? "",
+    image: item.image ?? "",
+    pdfUrl: item.pdfUrl ?? "",
+    pdfFileName: item.pdfFileName ?? "",
+    highlights: Array.isArray(item.highlights) ? item.highlights : [],
+    about: item.about ?? "",
+    summary: Array.isArray(item.summary) ? item.summary : [],
+    tip: item.tip ?? "",
+    tags: Array.isArray(item.tags) ? item.tags : [],
+    createdAt: item.createdAt ? String(item.createdAt) : "",
+  };
+}
+
+function emailKey(email: string) {
+  return email.trim().toLowerCase();
+}
+
+function apiAcceptedFlag(
+  item: {
+    accepted?: unknown;
+    acceptEmails?: unknown;
+    subscribed?: unknown;
+  },
+  fallback: boolean
+): boolean {
+  const raw = item.accepted ?? item.acceptEmails ?? item.subscribed;
+  if (raw === undefined || raw === null || raw === "") return fallback;
+  return readAcceptedFlag(raw, fallback);
+}
+
 function asDashEmail(
   item: Omit<Partial<DashEmail>, "accepted"> & {
     id: string;
@@ -162,20 +242,29 @@ function asDashEmail(
     accepted?: unknown;
     acceptEmails?: unknown;
     subscribed?: unknown;
-  }
+  },
+  fallbackAccepted = true
 ): DashEmail {
-  const accepted = readAcceptedFlag(
-    item.accepted ?? item.acceptEmails ?? item.subscribed,
-    true
-  );
   return {
     id: String(item.id),
     email: item.email,
     name: item.name,
     source: item.source === "account" ? "account" : "newsletter",
-    accepted,
+    accepted: apiAcceptedFlag(item, fallbackAccepted),
     createdAt: item.createdAt ? String(item.createdAt) : "",
   };
+}
+
+function hasApiAcceptedField(item: {
+  accepted?: unknown;
+  acceptEmails?: unknown;
+  subscribed?: unknown;
+}) {
+  return (
+    item.accepted !== undefined ||
+    item.acceptEmails !== undefined ||
+    item.subscribed !== undefined
+  );
 }
 
 export function getStore() {
@@ -189,17 +278,47 @@ export async function refreshStore(): Promise<Store> {
       api<DashArticle[]>("/article"),
       api<DashEbook[]>("/ebook"),
     ]);
-    store.articles = articles;
-    store.ebooks = ebooks;
+    store.articles = articles.map((item) => asDashArticle(item));
+    store.ebooks = ebooks.map((item) => asDashEbook(item));
 
     if (getToken()) {
       try {
         const [users, emails] = await Promise.all([
           api<Omit<DashUser, "password">[]>("/user", { auth: true }),
-          api<DashEmail[]>("/newsletter", { auth: true }),
+          api<
+            Array<
+              Partial<DashEmail> & {
+                id: string;
+                email: string;
+                accepted?: unknown;
+                acceptEmails?: unknown;
+                subscribed?: unknown;
+              }
+            >
+          >("/newsletter", { auth: true }),
         ]);
         store.users = users.map((u) => asDashUser(u));
-        store.emails = emails.map((item) => asDashEmail(item));
+
+        // Prefer API `accepted` when present; otherwise keep local/cache fallbacks.
+        const prevByEmail = new Map(
+          store.emails.map((e) => [emailKey(e.email), e] as const)
+        );
+        store.emails = emails.map((item) => {
+          if (hasApiAcceptedField(item)) {
+            const row = asDashEmail(item, true);
+            setNewsletterOptIn(row.email, row.accepted);
+            setEmailAcceptance(row.email, row.accepted);
+            return row;
+          }
+          const prev = prevByEmail.get(emailKey(item.email));
+          let fallback = true;
+          if (typeof prev?.accepted === "boolean") fallback = prev.accepted;
+          if (hasNewsletterOptIn(item.email)) {
+            fallback = getNewsletterOptIn(item.email);
+          }
+          fallback = resolveEmailAcceptance(item.email, fallback);
+          return asDashEmail(item, fallback);
+        });
       } catch {
         // keep cached admin data if token expired / not admin
       }
@@ -265,6 +384,7 @@ export async function saveArticle(
   input: Omit<DashArticle, "id" | "createdAt"> & { id?: string }
 ) {
   const body = {
+    language: contentLanguage(input.language),
     categories: input.categories,
     image: input.image,
     title: input.title,
@@ -284,7 +404,9 @@ export async function saveArticle(
       body,
     });
     const store = readCache();
-    store.articles = store.articles.map((a) => (a.id === input.id ? updated : a));
+    store.articles = store.articles.map((a) =>
+      a.id === input.id ? asDashArticle(updated) : a
+    );
     writeCache(store);
     return;
   }
@@ -295,7 +417,7 @@ export async function saveArticle(
     body,
   });
   const store = readCache();
-  store.articles.unshift(created);
+  store.articles.unshift(asDashArticle(created));
   writeCache(store);
 }
 
@@ -310,6 +432,7 @@ export async function saveEbook(
   input: Omit<DashEbook, "id" | "createdAt"> & { id?: string }
 ) {
   const body = {
+    language: contentLanguage(input.language),
     featured: input.featured,
     categories: input.categories,
     isRecipe: input.isRecipe,
@@ -319,6 +442,7 @@ export async function saveEbook(
     author: input.author,
     delivery: input.delivery,
     pages: input.pages,
+    image: input.image,
     pdfUrl: input.pdfUrl,
     pdfFileName: input.pdfFileName,
     highlights: input.highlights,
@@ -335,7 +459,9 @@ export async function saveEbook(
       body,
     });
     const store = readCache();
-    store.ebooks = store.ebooks.map((e) => (e.id === input.id ? updated : e));
+    store.ebooks = store.ebooks.map((e) =>
+      e.id === input.id ? asDashEbook(updated) : e
+    );
     writeCache(store);
     return;
   }
@@ -346,7 +472,7 @@ export async function saveEbook(
     body,
   });
   const store = readCache();
-  store.ebooks.unshift(created);
+  store.ebooks.unshift(asDashEbook(created));
   writeCache(store);
 }
 
@@ -364,12 +490,17 @@ export async function upsertEmail(input: {
   accepted?: boolean;
 }) {
   const accepted = input.accepted !== false;
+  const key = emailKey(input.email);
+  const store = readCache();
+  const existing = store.emails.find((e) => emailKey(e.email) === key);
+
   const data = await api<{
     id?: string;
     email?: string;
     name?: string;
     source?: "newsletter" | "account";
     accepted?: unknown;
+    acceptEmails?: unknown;
     createdAt?: string;
   }>("/newsletter", {
     method: "POST",
@@ -378,68 +509,101 @@ export async function upsertEmail(input: {
       name: input.name,
       source: input.source,
       accepted,
+      acceptEmails: accepted,
     },
   });
 
-  setNewsletterOptIn(input.email, accepted);
+  const savedAccepted = apiAcceptedFlag(data, accepted);
+  const id = data.id || existing?.id || `${Date.now()}`;
 
-  const store = readCache();
-  const normalized = asDashEmail({
-    id: data.id || `${Date.now()}`,
+  setNewsletterOptIn(input.email, savedAccepted);
+  setEmailAcceptance(input.email, savedAccepted);
+
+  const normalized: DashEmail = {
+    id: String(id),
     email: data.email || input.email,
     name: data.name || input.name,
-    source: data.source || input.source,
-    accepted: readAcceptedFlag(data.accepted, accepted),
-    createdAt: data.createdAt,
-  });
-  const idx = store.emails.findIndex(
-    (e) => e.email.trim().toLowerCase() === normalized.email.trim().toLowerCase()
-  );
-  if (idx >= 0) store.emails[idx] = { ...store.emails[idx], ...normalized, accepted };
-  else store.emails.unshift(normalized);
-  writeCache(store);
-
-  await refreshStore();
-}
-
-export async function setEmailAccepted(id: string, accepted: boolean) {
-  const store = readCache();
-  const current = store.emails.find((e) => e.id === id);
-
-  try {
-    await api(`/newsletter/${id}`, {
-      method: "PATCH",
-      auth: true,
-      body: { accepted },
-    });
-  } catch {
-    if (!current) throw new Error("Email introuvable.");
-    await api("/newsletter", {
-      method: "POST",
-      body: {
-        email: current.email,
-        name: current.name,
-        source: current.source,
-        accepted,
-      },
-    });
-  }
-
-  if (current) setNewsletterOptIn(current.email, accepted);
+    source: (data.source || input.source) === "account" ? "account" : "newsletter",
+    accepted: savedAccepted,
+    createdAt: data.createdAt ? String(data.createdAt) : existing?.createdAt || "",
+  };
 
   const next = readCache();
-  next.emails = next.emails.map((e) => (e.id === id ? { ...e, accepted } : e));
+  const idx = next.emails.findIndex((e) => emailKey(e.email) === key);
+  if (idx >= 0) next.emails[idx] = { ...next.emails[idx], ...normalized, accepted: savedAccepted };
+  else next.emails.unshift(normalized);
   writeCache(next);
-  await refreshStore();
+}
+
+/** Toggle "Accepte les emails" in the admin dashboard (Oui / Non). */
+export async function setEmailAccepted(
+  id: string,
+  accepted: boolean,
+  hint?: Pick<DashEmail, "email" | "name" | "source">
+) {
+  const store = readCache();
+  const current =
+    store.emails.find((e) => e.id === id) ||
+    (hint
+      ? {
+          id,
+          email: hint.email,
+          name: hint.name,
+          source: hint.source,
+          accepted: !accepted,
+          createdAt: "",
+        }
+      : undefined);
+  if (!current?.email) throw new Error("Email introuvable.");
+
+  const data = await api<{
+    msg?: string;
+    item?: Partial<DashEmail> & { accepted?: unknown; acceptEmails?: unknown };
+  }>(`/newsletter/${id}`, {
+    method: "PATCH",
+    auth: true,
+    body: {
+      accepted,
+      acceptEmails: accepted,
+      email: current.email,
+      name: current.name,
+      source: current.source,
+    },
+  });
+
+  const savedAccepted = apiAcceptedFlag(data.item || { accepted }, accepted);
+  setEmailAcceptance(current.email, savedAccepted);
+  setNewsletterOptIn(current.email, savedAccepted);
+
+  const next = readCache();
+  const idx = next.emails.findIndex(
+    (e) => e.id === id || emailKey(e.email) === emailKey(current.email)
+  );
+  if (idx >= 0) {
+    next.emails[idx] = { ...next.emails[idx], accepted: savedAccepted };
+  } else {
+    next.emails.unshift({ ...current, accepted: savedAccepted });
+  }
+  writeCache(next);
 }
 
 export async function deleteEmail(id: string) {
   const store = readCache();
   const current = store.emails.find((e) => e.id === id);
 
-  await api(`/newsletter/${id}`, { method: "DELETE", auth: true });
+  try {
+    await api(`/newsletter/${id}`, { method: "DELETE", auth: true });
+  } catch (err) {
+    // Still drop from the local list if the row was already gone on the server.
+    if (!current) throw err;
+    const status = err && typeof err === "object" && "status" in err ? Number(err.status) : 0;
+    if (status !== 404) throw err;
+  }
 
-  if (current) setNewsletterOptIn(current.email, false);
+  if (current) {
+    setNewsletterOptIn(current.email, false);
+    clearEmailAcceptance(current.email);
+  }
 
   const next = readCache();
   next.emails = next.emails.filter((e) => e.id !== id);
@@ -447,29 +611,50 @@ export async function deleteEmail(id: string) {
 }
 
 /** Resolve newsletter acceptance for the logged-in user (API + local cache). */
-export async function resolveNewsletterAccepted(email: string): Promise<boolean> {
-  const normalized = email.trim().toLowerCase();
+export async function resolveNewsletterAccepted(
+  email: string,
+  profileHint?: boolean
+): Promise<boolean> {
+  const normalized = emailKey(email);
+
+  // Profile payload is authoritative when the API includes newsletterAccepted.
+  if (typeof profileHint === "boolean") {
+    setNewsletterOptIn(email, profileHint);
+    setEmailAcceptance(email, profileHint);
+    return profileHint;
+  }
 
   if (getToken()) {
     try {
       const emails = await api<
-        Array<Partial<DashEmail> & { id: string; email: string }>
+        Array<
+          Partial<DashEmail> & {
+            id: string;
+            email: string;
+            accepted?: unknown;
+            acceptEmails?: unknown;
+          }
+        >
       >("/newsletter", { auth: true });
-      const match = emails.find((e) => e.email.trim().toLowerCase() === normalized);
+      const match = emails.find((e) => emailKey(e.email) === normalized);
       if (match) {
-        const accepted = asDashEmail(match).accepted;
+        const accepted = apiAcceptedFlag(match, true);
         setNewsletterOptIn(email, accepted);
+        setEmailAcceptance(email, accepted);
         return accepted;
       }
-      // Listed nowhere → not accepted yet
       setNewsletterOptIn(email, false);
+      setEmailAcceptance(email, false);
       return false;
     } catch {
-      // Non-admin users cannot list newsletters — use cache / profile
+      // Non-admin users cannot list newsletters — use cache
     }
   }
 
-  return getNewsletterOptIn(email);
+  if (hasNewsletterOptIn(email)) {
+    return getNewsletterOptIn(email);
+  }
+  return resolveEmailAcceptance(email, false);
 }
 
 function toAuthUser(user: {
@@ -563,13 +748,13 @@ export async function fetchCurrentProfile(): Promise<AuthUser | null> {
         root.acceptEmails,
     });
 
-    if (typeof user.newsletterAccepted === "boolean") {
-      setNewsletterOptIn(user.email, user.newsletterAccepted);
-    } else {
-      user.newsletterAccepted = await resolveNewsletterAccepted(user.email);
-    }
+    user.newsletterAccepted = await resolveNewsletterAccepted(
+      user.email,
+      user.newsletterAccepted
+    );
 
-    setCurrentUser(user);
+    // Silent: callers already hold the result; notifying would re-trigger profile load loops.
+    setCurrentUser(user, { notify: false });
     return user;
   } catch {
     return null;

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Cormorant_Garamond, DM_Sans, Noto_Naskh_Arabic } from "next/font/google";
+import { ScrollToTop } from "@/components/ScrollToTop";
 import "./globals.css";
 
 const dmSans = DM_Sans({
@@ -38,9 +39,13 @@ export default function RootLayout({
   return (
     <html
       lang="fr"
+      data-scroll-behavior="smooth"
       className={`${dmSans.variable} ${cormorant.variable} ${naskh.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-white text-ink">{children}</body>
+      <body className="min-h-full flex flex-col bg-white text-ink">
+        <ScrollToTop />
+        {children}
+      </body>
     </html>
   );
 }

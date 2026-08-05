@@ -1,4 +1,5 @@
-const DEFAULT_API = "https://wellnest-backend-p95c.vercel.app";
+const DEFAULT_API =
+  "https://wellnest-backend-eui970c78-hassanikhadidjas-projects.vercel.app";
 
 /**
  * Browser calls go through the Next.js `/backend` proxy (same origin → no CORS).
@@ -76,7 +77,10 @@ export function getCurrentUser(): AuthUser | null {
   }
 }
 
-export function setCurrentUser(user: AuthUser | null) {
+export function setCurrentUser(
+  user: AuthUser | null,
+  options?: { notify?: boolean }
+) {
   if (typeof window === "undefined") return;
   try {
     if (user) window.localStorage.setItem(USER_KEY, JSON.stringify(user));
@@ -84,7 +88,9 @@ export function setCurrentUser(user: AuthUser | null) {
   } catch {
     // ignore
   }
-  notifyAuthChanged();
+  if (options?.notify !== false) {
+    notifyAuthChanged();
+  }
 }
 
 export function clearAuth() {

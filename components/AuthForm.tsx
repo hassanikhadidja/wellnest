@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { getCurrentUser, getToken } from "@/lib/api";
 import { loginAccount, registerAccount } from "@/lib/dashboard-store";
+import { requestEmail } from "@/lib/email-client";
 
 type Mode = "login" | "signup";
 
@@ -18,6 +19,7 @@ export function AuthForm() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [forgotPasswordHint, setForgotPasswordHint] = useState(false);
 
   useEffect(() => {
     if (getToken() && getCurrentUser()) {
@@ -42,7 +44,10 @@ export function AuthForm() {
         <div className="mb-6 grid grid-cols-2 gap-2 rounded-full bg-cream p-1">
           <button
             type="button"
-            onClick={() => setMode("login")}
+            onClick={() => {
+              setMode("login");
+              setForgotPasswordHint(false);
+            }}
             className={`rounded-full py-2 text-[12px] font-bold tracking-wide transition-colors ${
               mode === "login" ? "bg-olive text-white" : "text-ink/70 hover:text-olive"
             }`}
@@ -51,7 +56,10 @@ export function AuthForm() {
           </button>
           <button
             type="button"
-            onClick={() => setMode("signup")}
+            onClick={() => {
+              setMode("signup");
+              setForgotPasswordHint(false);
+            }}
             className={`rounded-full py-2 text-[12px] font-bold tracking-wide transition-colors ${
               mode === "signup" ? "bg-olive text-white" : "text-ink/70 hover:text-olive"
             }`}
@@ -71,10 +79,12 @@ export function AuthForm() {
               try {
                 if (mode === "signup") {
                   await registerAccount({ name, email, password });
+                  await requestEmail("/api/email/account", { email, name });
+                  setMessage("Compte créé. Un e-mail de bienvenue vous a été envoyé…");
                 } else {
                   await loginAccount({ email, password });
+                  setMessage("Connexion réussie. Redirection…");
                 }
-                setMessage("Connexion réussie. Redirection…");
                 router.replace("/profil");
               } catch (err) {
                 setError(err instanceof Error ? err.message : "Une erreur est survenue.");
@@ -163,10 +173,35 @@ export function AuthForm() {
           </label>
 
           {mode === "login" && (
-            <div className="flex justify-end">
-              <button type="button" className="text-[12px] font-semibold text-olive hover:underline">
-                Mot de passe oublié ?
-              </button>
+            <div className="space-y-2">
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setError("");
+                    setForgotPasswordHint(true);
+                  }}
+                  className="text-[12px] font-semibold text-olive hover:underline"
+                >
+                  Mot de passe oublié ?
+                </button>
+              </div>
+              {forgotPasswordHint && (
+                <p className="rounded-xl border border-sand bg-cream/60 px-3 py-2.5 text-[12px] leading-relaxed text-ink/80">
+                  Pour réinitialiser votre mot de passe, contactez-nous à{" "}
+                  <a
+                    href="mailto:wellnest.diet@gmail.com?subject=Mot%20de%20passe%20oubli%C3%A9"
+                    className="font-semibold text-olive hover:underline"
+                  >
+                    wellnest.diet@gmail.com
+                  </a>{" "}
+                  ou au{" "}
+                  <a href="tel:+213555589118" className="font-semibold text-olive hover:underline">
+                    +213 555 58 91 18
+                  </a>
+                  .
+                </p>
+              )}
             </div>
           )}
 

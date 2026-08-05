@@ -1,5 +1,9 @@
+import type { ContentLanguage } from "@/lib/content-language";
+
 export type Article = {
   id: string;
+  /** Defaults to French when omitted on legacy static entries */
+  language?: ContentLanguage;
   category: string;
   title: string;
   subtitle: string;
@@ -205,6 +209,41 @@ export const articles: Article[] = [
       },
     ],
     tip: "Laissez votre enfant choisir un élément : il mangera plus volontiers.",
+  },
+  {
+    id: "ar-1",
+    language: "ar",
+    category: "Nutrition Maman",
+    title: "التغذية أثناء الحمل: الأساسيات المهمة",
+    subtitle: "دليل عملي لتغذية صحية لكِ ولجنينك.",
+    excerpt:
+      "اكتشفِ أهم العناصر الغذائية، الأطعمة الموصى بها، وعادات يومية بسيطة لدعم حملك براحة وثقة.",
+    date: "5 أوت 2026",
+    readTime: "6 دقائق قراءة",
+    image: "/images/article-1.jpg",
+    author: { name: "د. ليلى بنيامنة", role: "أخصائية تغذية" },
+    keyPoints: [
+      "اهتمي بالأطعمة الغنية بحمض الفوليك والحديد والكالسيوم.",
+      "اشربي الماء بانتظام طوال اليوم.",
+      "تجنبي الأطعمة النيئة عالية الخطورة والإفراط في الكافيين.",
+      "استمعي لجسمك وعدّلي الكميات تدريجياً.",
+    ],
+    introduction:
+      "الأكل الصحي أثناء الحمل ليس قيداً، بل مرافقة يومية. التغذية المتوازنة تدعم طاقتك، وتساعد على نمو جنينك، وتمنحك راحة أكبر في كل مرحلة.",
+    sections: [
+      {
+        title: "1. العناصر الأساسية في كل فصل من الحمل",
+        subtitle: "الفصل الأول",
+        body: "في بداية الحمل تكون الحاجة إلى حمض الفوليك مهمة جداً. أدخلي الخضروات الورقية، البقوليات، منتجات الألبان، ومصادر البروتين الجيدة. الوجبات الخفيفة الخفيفة تساعد أيضاً على تهدئة الغثيان.",
+        image: "/images/article-2.jpg",
+      },
+      {
+        title: "2. كيف تركّبين طبقاً بسيطاً ومغذياً",
+        body: "اختاري طبقاً ملوناً: خضار، بروتين، نشويات كاملة، وقليل من الدهون الجيدة. هذا النموذج يسهّل الشبع، يثبت الطاقة، ويبقى سهل التكييف حسب رغباتك.",
+        image: "/images/article-3.jpg",
+      },
+    ],
+    tip: "استشيري دائماً مختصاً في الصحة لمتابعة شخصية تناسب وضعك.",
   },
 ];
 

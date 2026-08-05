@@ -228,7 +228,9 @@ export function Footer() {
             </ul>
 
             <Link
-              href="/questionnaire"
+              href="https://calendly.com/wellnest-diet/30min"
+              target="_blank"
+              rel="noopener noreferrer"
               className="mt-5 inline-flex items-center gap-2 rounded-md bg-white px-4 py-2.5 text-[11px] font-bold tracking-[0.06em] text-olive transition-colors hover:bg-cream"
             >
               <svg viewBox="0 0 20 20" className="h-4 w-4" fill="none" aria-hidden>

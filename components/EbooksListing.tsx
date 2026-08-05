@@ -5,6 +5,11 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import {
+  CONTENT_LANGUAGES,
+  contentLanguage,
+  type ContentLanguage,
+} from "@/lib/content-language";
+import {
   ebookCategories,
   ebooks,
   featuredEbook as defaultFeaturedEbook,
@@ -68,6 +73,7 @@ export function EbooksListing() {
   const searchParams = useSearchParams();
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<(typeof ebookCategories)[number]>("Tous");
+  const [language, setLanguage] = useState<ContentLanguage | "all">("all");
   const [sortBy, setSortBy] = useState<SortFilter>("recent");
   const [sortOpen, setSortOpen] = useState(false);
   const [items, setItems] = useState<Ebook[]>(ebooks);
@@ -118,6 +124,8 @@ export function EbooksListing() {
       typeParam === "ebook" || typeParam === "guides" || tag.includes("guide");
 
     return items.filter((ebook) => {
+      const matchLanguage =
+        language === "all" || contentLanguage(ebook.language) === language;
       const matchCategory =
         category === "Tous" ||
         (category === "Guides Pratiques"
@@ -138,12 +146,13 @@ export function EbooksListing() {
               (sortBy === "grocery-free" && ebook.productType === "grocery" && ebook.pricing === "free") ||
               (sortBy === "grocery-paid" && ebook.productType === "grocery" && ebook.pricing === "paid") ||
               (sortBy === "ebook" && ebook.productType === "ebook");
-      return matchCategory && matchQuery && matchSort;
+      return matchLanguage && matchCategory && matchQuery && matchSort;
     });
-  }, [category, query, sortBy, searchParams, items]);
+  }, [category, language, query, sortBy, searchParams, items]);
 
   const showFeatured =
     sortBy === "recent" &&
+    (language === "all" || contentLanguage(featuredEbook.language) === language) &&
     (category === "Tous" ||
       category === "Guides Pratiques" ||
       featuredEbook.category === category);
@@ -211,6 +220,32 @@ export function EbooksListing() {
             className="w-full rounded-full border border-sand bg-cream/60 py-2.5 pl-10 pr-4 text-[13px] text-ink outline-none placeholder:text-muted focus:border-olive focus:ring-1 focus:ring-olive/30"
           />
         </label>
+
+        {/* Language tabs */}
+        <div className="mb-3 flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {(
+            [
+              { id: "all" as const, label: "Toutes les langues" },
+              ...CONTENT_LANGUAGES.map((item) => ({ id: item.id, label: item.label })),
+            ] as const
+          ).map((item) => {
+            const active = item.id === language;
+            return (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => setLanguage(item.id)}
+                className={`shrink-0 rounded-full px-3.5 py-1.5 text-[12px] font-semibold transition-colors ${
+                  active
+                    ? "bg-olive text-white"
+                    : "border border-sand bg-white text-ink/70 hover:border-olive/40 hover:text-olive"
+                }`}
+              >
+                {item.label}
+              </button>
+            );
+          })}
+        </div>
 
         {/* Categories */}
         <div className="mb-6 flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
@@ -354,13 +389,28 @@ export function EbooksListing() {
                     </span>
                     <span
                       className={`rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide ${
+                        contentLanguage(ebook.language) === "ar"
+                          ? "bg-brown/15 text-brown"
+                          : "bg-olive/15 text-olive"
+                      }`}
+                    >
+                      {contentLanguage(ebook.language) === "ar" ? "AR" : "FR"}
+                    </span>
+                    <span
+                      className={`rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide ${
                         ebook.pricing === "free" ? "bg-olive/15 text-olive" : "bg-sand text-brown"
                       }`}
                     >
                       {ebook.pricing === "free" ? "Gratuit" : "Payant"}
                     </span>
                   </div>
-                  <h3 className="mt-0.5 text-[14px] font-bold leading-snug text-ink hover:text-olive">{ebook.title}</h3>
+                  <h3
+                    className="mt-0.5 text-[14px] font-bold leading-snug text-ink hover:text-olive"
+                    dir={contentLanguage(ebook.language) === "ar" ? "rtl" : "ltr"}
+                    lang={contentLanguage(ebook.language)}
+                  >
+                    {ebook.title}
+                  </h3>
                   <div className="mt-1.5 flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-muted">
                     <span>{ebook.isRecipe && ebook.meta ? ebook.meta : ebook.pages}</span>
                     <span>{ebook.date}</span>
