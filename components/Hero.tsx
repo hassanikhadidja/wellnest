@@ -153,7 +153,7 @@ export function Hero() {
               برامج غذائية مخصصة لكل مرحلة من الحمل إلى المراهقة.
             </p>
             <Link
-              href="/#services"
+              href="/questionnaire"
               className="mt-4 inline-flex items-center justify-center rounded-md bg-olive px-5 py-2.5 text-[11px] font-semibold tracking-[0.08em] text-white transition-colors hover:bg-olive-dark"
             >
               DÉCOUVRIR PLUS
