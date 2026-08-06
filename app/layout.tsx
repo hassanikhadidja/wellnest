@@ -22,12 +22,37 @@ const naskh = Noto_Naskh_Arabic({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL || "https://wellnest-i92h.vercel.app"
+  ),
   title: "WELLNEST — بيت العافية —",
   description:
     "Nutrition saine pour chaque étape de la vie. De la naissance à l'adolescence. Programmes personnalisés, analyses et guides pratiques pour toute la famille.",
   icons: {
     icon: "/wellnest-icon.png",
     apple: "/wellnest-icon.png",
+  },
+  openGraph: {
+    title: "WELLNEST — بيت العافية",
+    description:
+      "Nutrition saine pour chaque étape de la vie. Programmes personnalisés, analyses et guides pratiques pour toute la famille.",
+    images: [
+      {
+        url: "/og.png",
+        width: 1200,
+        height: 630,
+        alt: "WELLNEST — بيت العافية — Your wellness, our priority",
+      },
+    ],
+    locale: "fr_FR",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "WELLNEST — بيت العافية",
+    description:
+      "Nutrition saine pour chaque étape de la vie. Programmes personnalisés, analyses et guides pratiques pour toute la famille.",
+    images: ["/og.png"],
   },
 };
 
