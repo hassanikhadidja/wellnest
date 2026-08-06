@@ -1,8 +1,18 @@
+import { cache } from "react";
 import { getApiBase } from "@/lib/api";
 import type { Article } from "@/lib/articles";
 import { resolveContentLanguage } from "@/lib/content-language";
 import type { Ebook } from "@/lib/ebooks";
 import type { DashArticle, DashEbook } from "@/lib/dashboard-store";
+
+const CLIENT_TTL_MS = 60_000;
+
+type CacheEntry<T> = { at: number; data: T };
+
+let articlesClientCache: CacheEntry<Article[]> | null = null;
+let ebooksClientCache: CacheEntry<Ebook[]> | null = null;
+let articlesInflight: Promise<Article[]> | null = null;
+let ebooksInflight: Promise<Ebook[]> | null = null;
 
 function estimateReadTime(text: string, language: string) {
   const words = text.trim().split(/\s+/).filter(Boolean).length;
@@ -122,7 +132,8 @@ export function mapDashEbook(e: DashEbook): Ebook {
 async function fetchJson<T>(path: string): Promise<T | null> {
   try {
     const res = await fetch(`${getApiBase()}${path}`, {
-      next: { revalidate: 30 },
+      // Cached on the server so listing pages don't wait on a cold backend every time.
+      next: { revalidate: 60 },
     });
     if (!res.ok) return null;
     return (await res.json()) as T;
@@ -131,10 +142,37 @@ async function fetchJson<T>(path: string): Promise<T | null> {
   }
 }
 
-export async function fetchArticlesFromApi(): Promise<Article[]> {
+const loadArticles = cache(async (): Promise<Article[]> => {
   const data = await fetchJson<DashArticle[]>("/article");
   if (!data?.length) return [];
   return data.map(mapDashArticle);
+});
+
+const loadEbooks = cache(async (): Promise<Ebook[]> => {
+  const data = await fetchJson<DashEbook[]>("/ebook");
+  if (!data?.length) return [];
+  return data.map(mapDashEbook);
+});
+
+export async function fetchArticlesFromApi(): Promise<Article[]> {
+  if (typeof window !== "undefined") {
+    if (articlesClientCache && Date.now() - articlesClientCache.at < CLIENT_TTL_MS) {
+      return articlesClientCache.data;
+    }
+    if (articlesInflight) return articlesInflight;
+    articlesInflight = (async () => {
+      const data = await fetchJson<DashArticle[]>("/article");
+      const mapped = data?.length ? data.map(mapDashArticle) : [];
+      articlesClientCache = { at: Date.now(), data: mapped };
+      articlesInflight = null;
+      return mapped;
+    })().catch((err) => {
+      articlesInflight = null;
+      throw err;
+    });
+    return articlesInflight;
+  }
+  return loadArticles();
 }
 
 export async function fetchArticleFromApi(id: string): Promise<Article | null> {
@@ -144,9 +182,24 @@ export async function fetchArticleFromApi(id: string): Promise<Article | null> {
 }
 
 export async function fetchEbooksFromApi(): Promise<Ebook[]> {
-  const data = await fetchJson<DashEbook[]>("/ebook");
-  if (!data?.length) return [];
-  return data.map(mapDashEbook);
+  if (typeof window !== "undefined") {
+    if (ebooksClientCache && Date.now() - ebooksClientCache.at < CLIENT_TTL_MS) {
+      return ebooksClientCache.data;
+    }
+    if (ebooksInflight) return ebooksInflight;
+    ebooksInflight = (async () => {
+      const data = await fetchJson<DashEbook[]>("/ebook");
+      const mapped = data?.length ? data.map(mapDashEbook) : [];
+      ebooksClientCache = { at: Date.now(), data: mapped };
+      ebooksInflight = null;
+      return mapped;
+    })().catch((err) => {
+      ebooksInflight = null;
+      throw err;
+    });
+    return ebooksInflight;
+  }
+  return loadEbooks();
 }
 
 export async function fetchEbookFromApi(id: string): Promise<Ebook | null> {

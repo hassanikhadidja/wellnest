@@ -3,20 +3,27 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { articleCategories, articles, type Article, resolveArticles } from "@/lib/articles";
+import { articleCategories, type Article, resolveArticles } from "@/lib/articles";
 import {
   CONTENT_LANGUAGES,
   inferContentLanguage,
+  localizeContentDate,
+  localizeReadTime,
   type ContentLanguage,
 } from "@/lib/content-language";
 
-export function ArticlesListing() {
+export function ArticlesListing({
+  initialArticles = [],
+}: {
+  initialArticles?: Article[];
+}) {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<(typeof articleCategories)[number]>("Tous");
   const [language, setLanguage] = useState<ContentLanguage | "all">("all");
-  const [items, setItems] = useState<Article[]>(articles);
+  const [items, setItems] = useState<Article[]>(initialArticles);
 
   useEffect(() => {
+    // Soft refresh in the background; keep SSR data visible meanwhile.
     void resolveArticles().then(setItems);
   }, []);
 
@@ -161,6 +168,8 @@ export function ArticlesListing() {
         <ul className="space-y-4">
           {filtered.map((article) => {
             const articleLang = inferContentLanguage(article, "article");
+            const displayDate = localizeContentDate(article.date, articleLang);
+            const displayReadTime = localizeReadTime(article.readTime, articleLang);
             return (
             <li key={article.id}>
               <article className="flex gap-3 rounded-2xl border border-sand/70 bg-white p-3 shadow-[0_2px_10px_rgba(44,42,38,0.04)]">
@@ -210,14 +219,14 @@ export function ArticlesListing() {
                         <rect x="2" y="3" width="12" height="11" rx="1.2" stroke="currentColor" strokeWidth="1.2" />
                         <path d="M5 2V4.5M11 2V4.5M2 6.5H14" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
                       </svg>
-                      {article.date}
+                      <span dir={articleLang === "ar" ? "rtl" : "ltr"}>{displayDate}</span>
                     </span>
                     <span className="inline-flex items-center gap-1">
                       <svg viewBox="0 0 16 16" className="h-3 w-3" fill="none" aria-hidden>
                         <circle cx="8" cy="8" r="5.5" stroke="currentColor" strokeWidth="1.2" />
                         <path d="M8 5V8.5L10 10" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
                       </svg>
-                      {article.readTime}
+                      {displayReadTime}
                     </span>
                   </div>
                 </div>
@@ -230,42 +239,6 @@ export function ArticlesListing() {
         {filtered.length === 0 && (
           <p className="py-10 text-center text-[13px] text-muted">Aucun article ne correspond à votre recherche.</p>
         )}
-
-        {/* Pagination */}
-        <nav className="mt-8 flex items-center justify-center gap-1.5" aria-label="Pagination">
-          <button
-            type="button"
-            className="flex h-8 w-8 items-center justify-center rounded-full text-ink/50 hover:bg-cream hover:text-olive"
-            aria-label="Page précédente"
-          >
-            ‹
-          </button>
-          {[1, 2, 3].map((page) => (
-            <button
-              key={page}
-              type="button"
-              className={`flex h-8 w-8 items-center justify-center rounded-full text-[13px] font-semibold ${
-                page === 1 ? "bg-olive text-white" : "text-ink/70 hover:bg-cream hover:text-olive"
-              }`}
-            >
-              {page}
-            </button>
-          ))}
-          <span className="px-1 text-ink/40">…</span>
-          <button
-            type="button"
-            className="flex h-8 w-8 items-center justify-center rounded-full text-[13px] font-semibold text-ink/70 hover:bg-cream hover:text-olive"
-          >
-            8
-          </button>
-          <button
-            type="button"
-            className="flex h-8 w-8 items-center justify-center rounded-full text-ink/50 hover:bg-cream hover:text-olive"
-            aria-label="Page suivante"
-          >
-            ›
-          </button>
-        </nav>
       </div>
     </div>
   );

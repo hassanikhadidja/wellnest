@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { articles as defaultArticles, resolveArticles, type Article } from "@/lib/articles";
+import { resolveArticles, type Article } from "@/lib/articles";
 
 const metrics = [
   { label: "Nutrition", value: 85, color: "#5a6b38", icon: "/images/metrics/nutrition.png" },
@@ -22,8 +22,12 @@ const groceries = [
 const cardClass =
   "flex h-full flex-col rounded-xl bg-[rgb(232_223_208/42%)] p-5 sm:p-6";
 
-export function DashboardPreview() {
-  const [articles, setArticles] = useState<Article[]>(defaultArticles);
+export function DashboardPreview({
+  initialArticles = [],
+}: {
+  initialArticles?: Article[];
+}) {
+  const [articles, setArticles] = useState<Article[]>(initialArticles);
   const circumference = 2 * Math.PI * 36;
   const progress = 0.78;
   const offset = circumference * (1 - progress);
@@ -173,7 +177,7 @@ export function DashboardPreview() {
           </ul>
 
           <Link
-            href="#ressources"
+            href="/ebooks?type=grocery&tag=shopping%20list"
             className="mt-6 inline-flex items-center justify-center rounded-md bg-sand-dark px-4 py-2.5 text-center text-[11px] font-bold tracking-[0.05em] text-ink transition-colors hover:bg-[#d4c4a8]"
           >
             VOIR MA LISTE PERSONNALISEE

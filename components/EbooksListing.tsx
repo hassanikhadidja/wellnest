@@ -7,14 +7,12 @@ import { useEffect, useMemo, useState } from "react";
 import {
   CONTENT_LANGUAGES,
   inferContentLanguage,
+  localizeContentDate,
   type ContentLanguage,
 } from "@/lib/content-language";
 import {
   ebookCategories,
-  ebooks,
-  featuredEbook as defaultFeaturedEbook,
   resolveEbooks,
-  resolveFeaturedEbook,
   sortFilters,
   type Ebook,
   type SortFilter,
@@ -69,19 +67,28 @@ function ReasonIcon({ type }: { type: string }) {
   );
 }
 
-export function EbooksListing() {
+export function EbooksListing({
+  initialEbooks = [],
+  initialFeatured = null,
+}: {
+  initialEbooks?: Ebook[];
+  initialFeatured?: Ebook | null;
+}) {
   const searchParams = useSearchParams();
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<(typeof ebookCategories)[number]>("Tous");
   const [language, setLanguage] = useState<ContentLanguage | "all">("all");
   const [sortBy, setSortBy] = useState<SortFilter>("recent");
   const [sortOpen, setSortOpen] = useState(false);
-  const [items, setItems] = useState<Ebook[]>(ebooks);
-  const [featuredEbook, setFeaturedEbook] = useState(defaultFeaturedEbook);
+  const [items, setItems] = useState<Ebook[]>(initialEbooks);
+  const [featuredEbook, setFeaturedEbook] = useState<Ebook | null>(initialFeatured);
 
   useEffect(() => {
-    void resolveEbooks().then(setItems);
-    void resolveFeaturedEbook().then(setFeaturedEbook);
+    // One fetch only — featured is derived from the same list.
+    void resolveEbooks().then((list) => {
+      setItems(list);
+      setFeaturedEbook(list.find((ebook) => ebook.featured) ?? list[0] ?? null);
+    });
   }, []);
 
   useEffect(() => {
@@ -150,14 +157,20 @@ export function EbooksListing() {
     });
   }, [category, language, query, sortBy, searchParams, items]);
 
+  const featuredLang = featuredEbook
+    ? inferContentLanguage(featuredEbook, "ebook")
+    : "fr";
   const showFeatured =
+    featuredEbook != null &&
     sortBy === "recent" &&
-    (language === "all" || inferContentLanguage(featuredEbook, "ebook") === language) &&
+    (language === "all" || featuredLang === language) &&
     (category === "Tous" ||
       category === "Guides Pratiques" ||
       featuredEbook.category === category);
 
   const activeSortLabel = sortFilters.find((item) => item.id === sortBy)?.label ?? "Plus récentes";
+  const featuredCover =
+    featuredEbook?.image?.trim() || "/images/article-1.jpg";
 
   return (
     <div className="bg-white pb-10 pt-4">
@@ -269,17 +282,35 @@ export function EbooksListing() {
         </div>
 
         {/* Featured */}
-        {showFeatured && (
-          <article className="mb-8 overflow-hidden rounded-2xl bg-cream p-4 sm:p-5">
-            <div className="flex gap-4">
+        {showFeatured && featuredEbook && (
+          <article
+            className="mb-8 overflow-hidden rounded-2xl bg-cream p-4 sm:p-5"
+            dir={featuredLang === "ar" ? "rtl" : "ltr"}
+            lang={featuredLang}
+          >
+            <div className="flex items-stretch gap-3 sm:gap-5">
+              <Link
+                href={`/ebooks/${featuredEbook.id}`}
+                className="relative h-[130px] w-[100px] shrink-0 overflow-hidden rounded-xl bg-sand/50 sm:h-[168px] sm:w-[128px]"
+                aria-label={featuredEbook.title}
+              >
+                <Image
+                  src={featuredCover}
+                  alt={featuredEbook.title}
+                  fill
+                  className="object-cover"
+                  sizes="128px"
+                  priority
+                />
+              </Link>
               <div className="min-w-0 flex-1">
                 <span className="inline-block rounded-full bg-olive/15 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-olive">
-                  {featuredEbook.label}
+                  {featuredEbook.label || "E-BOOK À LA UNE"}
                 </span>
                 <h2 className="mt-2 font-display text-xl font-semibold leading-snug text-ink sm:text-2xl">
                   {featuredEbook.title}
                 </h2>
-                <p className="mt-1.5 text-[13px] leading-relaxed text-muted">
+                <p className="mt-1.5 line-clamp-3 text-[13px] leading-relaxed text-muted sm:line-clamp-none">
                   {featuredEbook.description}
                 </p>
                 <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-muted">
@@ -302,18 +333,9 @@ export function EbooksListing() {
                   href={`/ebooks/${featuredEbook.id}`}
                   className="mt-4 inline-flex items-center gap-2 rounded-full bg-olive px-5 py-2.5 text-[11px] font-bold tracking-[0.06em] text-white transition-colors hover:bg-olive-dark"
                 >
-                  VOIR LE E-BOOK
-                  <span aria-hidden>→</span>
+                  {featuredLang === "ar" ? "عرض الكتاب" : "VOIR LE E-BOOK"}
+                  <span aria-hidden>{featuredLang === "ar" ? "←" : "→"}</span>
                 </Link>
-              </div>
-              <div className="relative hidden h-[140px] w-[110px] shrink-0 overflow-hidden rounded-xl sm:block">
-                <Image
-                  src={featuredEbook.image}
-                  alt=""
-                  fill
-                  className="object-cover"
-                  sizes="110px"
-                />
               </div>
             </div>
           </article>
@@ -376,7 +398,10 @@ export function EbooksListing() {
         <ul className="space-y-3">
           {filtered
             .filter((ebook) => !ebook.featured)
-            .map((ebook) => (
+            .map((ebook) => {
+              const ebookLang = inferContentLanguage(ebook, "ebook");
+              const displayDate = localizeContentDate(ebook.date, ebookLang);
+              return (
             <li key={ebook.id}>
               <article className="flex items-center gap-3 rounded-2xl border border-sand/70 bg-white p-3 shadow-[0_2px_10px_rgba(44,42,38,0.04)]">
                 <Link href={`/ebooks/${ebook.id}`} className="relative h-[72px] w-[72px] shrink-0 overflow-hidden rounded-xl">
@@ -389,12 +414,12 @@ export function EbooksListing() {
                     </span>
                     <span
                       className={`rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide ${
-                        inferContentLanguage(ebook, "ebook") === "ar"
+                        ebookLang === "ar"
                           ? "bg-brown/15 text-brown"
                           : "bg-olive/15 text-olive"
                       }`}
                     >
-                      {inferContentLanguage(ebook, "ebook") === "ar" ? "AR" : "FR"}
+                      {ebookLang === "ar" ? "AR" : "FR"}
                     </span>
                     <span
                       className={`rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide ${
@@ -406,14 +431,14 @@ export function EbooksListing() {
                   </div>
                   <h3
                     className="mt-0.5 text-[14px] font-bold leading-snug text-ink hover:text-olive"
-                    dir={inferContentLanguage(ebook, "ebook") === "ar" ? "rtl" : "ltr"}
-                    lang={inferContentLanguage(ebook, "ebook")}
+                    dir={ebookLang === "ar" ? "rtl" : "ltr"}
+                    lang={ebookLang}
                   >
                     {ebook.title}
                   </h3>
                   <div className="mt-1.5 flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-muted">
                     <span>{ebook.isRecipe && ebook.meta ? ebook.meta : ebook.pages}</span>
-                    <span>{ebook.date}</span>
+                    <span dir={ebookLang === "ar" ? "rtl" : "ltr"}>{displayDate}</span>
                   </div>
                 </Link>
                 <Link
@@ -428,7 +453,8 @@ export function EbooksListing() {
                 </Link>
               </article>
             </li>
-          ))}
+              );
+            })}
         </ul>
 
         {filtered.length === 0 && (

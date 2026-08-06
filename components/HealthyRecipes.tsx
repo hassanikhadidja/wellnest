@@ -3,16 +3,22 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { healthyRecipes as defaultRecipes, resolveHealthyRecipes, type Ebook } from "@/lib/ebooks";
+import { resolveHealthyRecipes, type Ebook } from "@/lib/ebooks";
 
 const marqueeText = "MANGER SAIN • VIVRE MIEUX • RECETTES ÉQUILIBRÉES";
 
-export function HealthyRecipes() {
-  const [healthyRecipes, setHealthyRecipes] = useState<Ebook[]>(defaultRecipes);
+export function HealthyRecipes({
+  initialRecipes = [],
+}: {
+  initialRecipes?: Ebook[];
+}) {
+  const [healthyRecipes, setHealthyRecipes] = useState<Ebook[]>(initialRecipes);
 
   useEffect(() => {
     void resolveHealthyRecipes().then(setHealthyRecipes);
   }, []);
+
+  if (healthyRecipes.length === 0) return null;
 
   return (
     <section id="recettes" className="recipes-section bg-white py-10 sm:py-14 max-[999px]:pt-0 max-[999px]:pb-8">

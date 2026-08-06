@@ -26,13 +26,25 @@ async function proxy(req: NextRequest, context: RouteContext) {
     if (value) headers.set(key, value);
   }
 
+  // Public content lists can be cached briefly; auth/mutating requests stay fresh.
+  const pathKey = path.join("/");
+  const isPublicContentGet =
+    method === "GET" &&
+    !headers.has("authorization") &&
+    (pathKey === "article" ||
+      pathKey === "ebook" ||
+      /^article\/[^/]+$/.test(pathKey) ||
+      /^ebook\/[^/]+$/.test(pathKey));
+
   let upstream: Response;
   try {
     upstream = await fetch(targetUrl, {
       method,
       headers,
       body: hasBody ? await req.arrayBuffer() : undefined,
-      cache: "no-store",
+      ...(isPublicContentGet
+        ? { next: { revalidate: 60 } }
+        : { cache: "no-store" as const }),
     });
   } catch {
     return NextResponse.json(

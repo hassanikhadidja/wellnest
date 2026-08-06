@@ -5,13 +5,16 @@ import { EbookDetail } from "@/components/EbookDetail";
 import { NewsletterBanner } from "@/components/NewsletterBanner";
 import { Footer } from "@/components/Footer";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
-import { ebooks, resolveEbookById } from "@/lib/ebooks";
+import { resolveEbookById, resolveEbooks } from "@/lib/ebooks";
+
+export const revalidate = 60;
 
 type Props = {
   params: Promise<{ id: string }>;
 };
 
 export async function generateStaticParams() {
+  const ebooks = await resolveEbooks();
   return ebooks.map((ebook) => ({ id: ebook.id }));
 }
 

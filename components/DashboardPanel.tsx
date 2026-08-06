@@ -7,6 +7,7 @@ import {
   CONTENT_LANGUAGES,
   contentLanguage,
   contentLanguageLabel,
+  resolveContentLanguage,
   setStoredContentLanguage,
   type ContentLanguage,
 } from "@/lib/content-language";
@@ -578,25 +579,37 @@ export function DashboardPanel() {
               </header>
               <ul className="space-y-3">
                 {articles.length === 0 && <li className="text-[13px] text-muted">Aucun article pour le moment.</li>}
-                {articles.map((article) => (
+                {articles.map((article) => {
+                  const articleLang = resolveContentLanguage(
+                    "article",
+                    article.id,
+                    article.language,
+                    article.title,
+                    article.subtitle,
+                    article.introduction,
+                    article.tip,
+                    ...article.keyPoints,
+                    ...article.sections.map((s) => `${s.title} ${s.text}`)
+                  );
+                  return (
                   <li key={article.id} className="rounded-xl border border-sand/70 p-3">
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div>
                         <div className="flex flex-wrap items-center gap-2">
-                          <LanguageBadge language={article.language} />
+                          <LanguageBadge language={articleLang} />
                           <p className="text-[11px] font-bold uppercase tracking-wide text-olive">
                             {article.categories.join(" • ") || "Sans catégorie"}
                           </p>
                         </div>
                         <h3
                           className="mt-1 font-semibold text-ink"
-                          dir={contentLanguage(article.language) === "ar" ? "rtl" : "ltr"}
-                          lang={contentLanguage(article.language)}
+                          dir={articleLang === "ar" ? "rtl" : "ltr"}
+                          lang={articleLang}
                         >
                           {article.title}
                         </h3>
                         <p className="text-[12px] text-muted">
-                          {contentLanguageLabel(article.language)} — {article.createdAt} — Par{" "}
+                          {contentLanguageLabel(articleLang)} — {article.createdAt} — Par{" "}
                           {article.author || "—"}
                         </p>
                       </div>
@@ -607,7 +620,7 @@ export function DashboardPanel() {
                           onClick={() => {
                             setArticleForm({
                               ...article,
-                              language: contentLanguage(article.language),
+                              language: articleLang,
                             });
                             setKeyPointsText(listToLines(article.keyPoints));
                             setArticleTags(article.tags.join(", "));
@@ -626,7 +639,8 @@ export function DashboardPanel() {
                       </div>
                     </div>
                   </li>
-                ))}
+                  );
+                })}
               </ul>
             </>
           )}
@@ -653,12 +667,24 @@ export function DashboardPanel() {
               </header>
               <ul className="space-y-3">
                 {ebooks.length === 0 && <li className="text-[13px] text-muted">Aucun e-book pour le moment.</li>}
-                {ebooks.map((ebook) => (
+                {ebooks.map((ebook) => {
+                  const ebookLang = resolveContentLanguage(
+                    "ebook",
+                    ebook.id,
+                    ebook.language,
+                    ebook.title,
+                    ebook.subtitle,
+                    ebook.about,
+                    ebook.tip,
+                    ...ebook.highlights,
+                    ...ebook.summary
+                  );
+                  return (
                   <li key={ebook.id} className="rounded-xl border border-sand/70 p-3">
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div>
                         <div className="flex flex-wrap items-center gap-2">
-                          <LanguageBadge language={ebook.language} />
+                          <LanguageBadge language={ebookLang} />
                           <p className="text-[11px] font-bold uppercase tracking-wide text-olive">
                             {ebook.featured ? "E-BOOK À LA UNE • " : ""}
                             {ebook.isRecipe ? "Recette • " : ""}
@@ -667,13 +693,13 @@ export function DashboardPanel() {
                         </div>
                         <h3
                           className="mt-1 font-semibold text-ink"
-                          dir={contentLanguage(ebook.language) === "ar" ? "rtl" : "ltr"}
-                          lang={contentLanguage(ebook.language)}
+                          dir={ebookLang === "ar" ? "rtl" : "ltr"}
+                          lang={ebookLang}
                         >
                           {ebook.title}
                         </h3>
                         <p className="text-[12px] text-muted">
-                          {contentLanguageLabel(ebook.language)} — {ebook.pages || "—"} pages —{" "}
+                          {contentLanguageLabel(ebookLang)} — {ebook.pages || "—"} pages —{" "}
                           {ebook.delivery === "immediate"
                             ? "Téléchargement immédiat"
                             : "Par mail après paiement"}{" "}
@@ -687,7 +713,7 @@ export function DashboardPanel() {
                           onClick={() => {
                             setEbookForm({
                               ...ebook,
-                              language: contentLanguage(ebook.language),
+                              language: ebookLang,
                               recipeMeta: ebook.recipeMeta ?? { time: "", difficulty: "facile", people: "" },
                             });
                             setHighlightsText(listToLines(ebook.highlights));
@@ -708,7 +734,8 @@ export function DashboardPanel() {
                       </div>
                     </div>
                   </li>
-                ))}
+                  );
+                })}
               </ul>
             </>
           )}

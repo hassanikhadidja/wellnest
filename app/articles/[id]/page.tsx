@@ -5,13 +5,16 @@ import { ArticleDetail } from "@/components/ArticleDetail";
 import { NewsletterBanner } from "@/components/NewsletterBanner";
 import { Footer } from "@/components/Footer";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
-import { articles, resolveArticleById } from "@/lib/articles";
+import { resolveArticleById, resolveArticles } from "@/lib/articles";
+
+export const revalidate = 60;
 
 type Props = {
   params: Promise<{ id: string }>;
 };
 
 export async function generateStaticParams() {
+  const articles = await resolveArticles();
   return articles.map((article) => ({ id: article.id }));
 }
 

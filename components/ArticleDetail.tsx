@@ -6,6 +6,7 @@ import {
   articleUi,
   inferContentLanguage,
   localizeAuthorRole,
+  localizeContentDate,
   localizeReadTime,
 } from "@/lib/content-language";
 
@@ -14,6 +15,7 @@ export function ArticleDetail({ article }: { article: Article }) {
   const ui = articleUi(language);
   const authorRole = localizeAuthorRole(article.author.role, language);
   const readTime = localizeReadTime(article.readTime, language);
+  const displayDate = localizeContentDate(article.date, language);
   const shortCrumb =
     article.title.length > 28 ? `${article.title.slice(0, 28)}…` : article.title;
 
@@ -94,7 +96,7 @@ export function ArticleDetail({ article }: { article: Article }) {
               <rect x="2" y="3" width="12" height="11" rx="1.2" stroke="currentColor" strokeWidth="1.2" />
               <path d="M5 2V4.5M11 2V4.5M2 6.5H14" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
             </svg>
-            {article.date}
+            <span dir={language === "ar" ? "rtl" : "ltr"}>{displayDate}</span>
           </span>
           <span className="hidden h-8 w-px bg-sand sm:block" aria-hidden />
           <span className="inline-flex items-center gap-1.5">

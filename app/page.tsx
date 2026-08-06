@@ -9,8 +9,17 @@ import { NewsletterBanner } from "@/components/NewsletterBanner";
 import { Footer } from "@/components/Footer";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
 import { HashScroll } from "@/components/HashScroll";
+import { resolveArticles } from "@/lib/articles";
+import { resolveHealthyRecipes } from "@/lib/ebooks";
 
-export default function Home() {
+export const revalidate = 60;
+
+export default async function Home() {
+  const [initialArticles, initialRecipes] = await Promise.all([
+    resolveArticles(),
+    resolveHealthyRecipes(),
+  ]);
+
   return (
     <>
       <HashScroll />
@@ -19,9 +28,9 @@ export default function Home() {
         <Hero />
         <Features />
         <CtaBanner />
-        <DashboardPreview />
+        <DashboardPreview initialArticles={initialArticles} />
         <Resources />
-        <HealthyRecipes />
+        <HealthyRecipes initialRecipes={initialRecipes} />
         <NewsletterBanner />
       </main>
       <Footer />

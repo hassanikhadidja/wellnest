@@ -2,21 +2,44 @@
 
 import { useState, type FormEvent } from "react";
 import { ebookUi, type ContentLanguage } from "@/lib/content-language";
+import type { Pricing } from "@/lib/ebooks";
+
+/** Wellnest WhatsApp business number (digits only, country code included). */
+const WELLNEST_WHATSAPP = "213555589118";
 
 type Props = {
   ebookId: string;
+  ebookTitle: string;
+  pricing?: Pricing;
   language?: ContentLanguage | string | null;
   variant?: "primary" | "inverse";
 };
 
-export function EbookDownloadForm({ ebookId, language, variant = "primary" }: Props) {
+function normalizePhone(value: string) {
+  return value.replace(/[^\d+]/g, "").trim();
+}
+
+function isValidWhatsApp(value: string) {
+  const digits = value.replace(/\D/g, "");
+  return digits.length >= 8 && digits.length <= 15;
+}
+
+export function EbookDownloadForm({
+  ebookId,
+  ebookTitle,
+  pricing = "free",
+  language,
+  variant = "primary",
+}: Props) {
   const ui = ebookUi(language);
+  const isPaid = pricing === "paid";
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState("");
+  const [whatsapp, setWhatsapp] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "done" | "error">("idle");
   const [message, setMessage] = useState("");
 
-  const onSubmit = (e: FormEvent) => {
+  const onSubmitFree = (e: FormEvent) => {
     e.preventDefault();
     void (async () => {
       setStatus("loading");
@@ -43,6 +66,34 @@ export function EbookDownloadForm({ ebookId, language, variant = "primary" }: Pr
     })();
   };
 
+  const onSubmitPaid = (e: FormEvent) => {
+    e.preventDefault();
+    const phone = normalizePhone(whatsapp);
+    if (!isValidWhatsApp(phone)) {
+      setStatus("error");
+      setMessage(ui.whatsappInvalid);
+      return;
+    }
+
+    setStatus("loading");
+    setMessage("");
+
+    const text =
+      language === "ar"
+        ? `مرحباً WELLNEST، أرغب في الحصول على الدليل المدفوع «${ebookTitle}». رقم واتسابي: ${phone}`
+        : `Bonjour WELLNEST, je souhaite obtenir le e-book payant « ${ebookTitle} ». Mon numéro WhatsApp : ${phone}`;
+
+    window.open(
+      `https://wa.me/${WELLNEST_WHATSAPP}?text=${encodeURIComponent(text)}`,
+      "_blank",
+      "noopener,noreferrer"
+    );
+
+    setStatus("done");
+    setMessage(ui.sentOkWhatsApp);
+    setWhatsapp("");
+  };
+
   const buttonClass =
     variant === "inverse"
       ? "inline-flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-[11px] font-bold tracking-[0.06em] text-olive transition-colors hover:bg-cream"
@@ -56,8 +107,12 @@ export function EbookDownloadForm({ ebookId, language, variant = "primary" }: Pr
   if (!open && status !== "done") {
     return (
       <button type="button" className={buttonClass} onClick={() => setOpen(true)}>
-        {variant === "inverse" ? ui.downloadNow : ui.downloadEbook}
-        <span aria-hidden>↓</span>
+        {isPaid
+          ? ui.downloadPaid
+          : variant === "inverse"
+            ? ui.downloadNow
+            : ui.downloadEbook}
+        <span aria-hidden>{isPaid ? "→" : "↓"}</span>
       </button>
     );
   }
@@ -67,15 +122,43 @@ export function EbookDownloadForm({ ebookId, language, variant = "primary" }: Pr
       {status === "done" ? (
         <p
           className={
-            variant === "inverse"
-              ? "text-[13px] text-white/90"
-              : "text-[13px] text-olive"
+            variant === "inverse" ? "text-[13px] text-white/90" : "text-[13px] text-olive"
           }
         >
           {message}
         </p>
+      ) : isPaid ? (
+        <form
+          className="flex w-full max-w-md flex-col gap-2 sm:flex-row sm:items-center"
+          onSubmit={onSubmitPaid}
+        >
+          <label htmlFor={`ebook-wa-${ebookId}-${variant}`} className="sr-only">
+            {ui.whatsappLabel}
+          </label>
+          <input
+            id={`ebook-wa-${ebookId}-${variant}`}
+            type="tel"
+            name="whatsapp"
+            required
+            inputMode="tel"
+            autoComplete="tel"
+            value={whatsapp}
+            onChange={(e) => {
+              setWhatsapp(e.target.value);
+              if (status === "error") setStatus("idle");
+            }}
+            placeholder={ui.whatsappPlaceholder}
+            className={inputClass}
+          />
+          <button type="submit" disabled={status === "loading"} className={buttonClass}>
+            {status === "loading" ? ui.sending : ui.sendWhatsApp}
+          </button>
+        </form>
       ) : (
-        <form className="flex w-full max-w-md flex-col gap-2 sm:flex-row sm:items-center" onSubmit={onSubmit}>
+        <form
+          className="flex w-full max-w-md flex-col gap-2 sm:flex-row sm:items-center"
+          onSubmit={onSubmitFree}
+        >
           <label htmlFor={`ebook-email-${ebookId}-${variant}`} className="sr-only">
             {ui.emailLabel}
           </label>
@@ -89,11 +172,7 @@ export function EbookDownloadForm({ ebookId, language, variant = "primary" }: Pr
             placeholder={ui.emailPlaceholder}
             className={inputClass}
           />
-          <button
-            type="submit"
-            disabled={status === "loading"}
-            className={buttonClass}
-          >
+          <button type="submit" disabled={status === "loading"} className={buttonClass}>
             {status === "loading" ? ui.sending : ui.receiveByEmail}
           </button>
         </form>

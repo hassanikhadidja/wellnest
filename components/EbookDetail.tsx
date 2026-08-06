@@ -5,6 +5,7 @@ import {
   ebookUi,
   inferContentLanguage,
   localizeAuthorRole,
+  localizeContentDate,
 } from "@/lib/content-language";
 import type { Ebook } from "@/lib/ebooks";
 
@@ -12,6 +13,7 @@ export function EbookDetail({ ebook }: { ebook: Ebook }) {
   const language = inferContentLanguage(ebook, "ebook");
   const ui = ebookUi(language);
   const authorRole = localizeAuthorRole(ebook.author.role, language);
+  const displayDate = localizeContentDate(ebook.date, language);
   const shortCrumb =
     ebook.title.length > 28 ? `${ebook.title.slice(0, 28)}…` : ebook.title;
 
@@ -56,9 +58,16 @@ export function EbookDetail({ ebook }: { ebook: Ebook }) {
             className="object-cover"
             sizes="(max-width: 760px) 100vw, 760px"
           />
-          <span className="absolute left-3 top-3 rounded-full bg-olive px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-white">
-            {ebook.category}
-          </span>
+          <div className="absolute left-3 top-3 flex flex-wrap gap-1.5">
+            <span className="rounded-full bg-olive px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-white">
+              {ebook.category}
+            </span>
+            {ebook.pricing === "paid" && (
+              <span className="rounded-full bg-brown px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-white">
+                {ui.paidBadge}
+              </span>
+            )}
+          </div>
         </div>
 
         <h1 className="font-display text-[1.75rem] font-semibold leading-tight text-ink sm:text-4xl">
@@ -100,7 +109,7 @@ export function EbookDetail({ ebook }: { ebook: Ebook }) {
               <rect x="2" y="3" width="12" height="11" rx="1.2" stroke="currentColor" strokeWidth="1.2" />
               <path d="M5 2V4.5M11 2V4.5M2 6.5H14" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
             </svg>
-            {ebook.date}
+            <span dir={language === "ar" ? "rtl" : "ltr"}>{displayDate}</span>
           </span>
           <span className="hidden h-8 w-px bg-sand sm:block" aria-hidden />
           <span className="inline-flex items-center gap-1.5">
@@ -114,7 +123,16 @@ export function EbookDetail({ ebook }: { ebook: Ebook }) {
 
         {/* CTA */}
         <div className="mt-5">
-          <EbookDownloadForm ebookId={ebook.id} language={language} variant="primary" />
+          {ebook.pricing === "paid" && (
+            <p className="mb-3 text-[13px] leading-relaxed text-muted">{ui.ctaTextPaid}</p>
+          )}
+          <EbookDownloadForm
+            ebookId={ebook.id}
+            ebookTitle={ebook.title}
+            pricing={ebook.pricing}
+            language={language}
+            variant="primary"
+          />
         </div>
 
         {/* Highlights */}
@@ -191,9 +209,17 @@ export function EbookDetail({ ebook }: { ebook: Ebook }) {
         {/* Bottom CTA */}
         <div className="mt-8 rounded-2xl bg-olive p-5 text-white">
           <h2 className="font-display text-xl font-semibold">{ui.ctaTitle}</h2>
-          <p className="mt-1.5 text-[13px] text-white/85">{ui.ctaText}</p>
+          <p className="mt-1.5 text-[13px] text-white/85">
+            {ebook.pricing === "paid" ? ui.ctaTextPaid : ui.ctaText}
+          </p>
           <div className="mt-4">
-            <EbookDownloadForm ebookId={ebook.id} language={language} variant="inverse" />
+            <EbookDownloadForm
+              ebookId={ebook.id}
+              ebookTitle={ebook.title}
+              pricing={ebook.pricing}
+              language={language}
+              variant="inverse"
+            />
           </div>
         </div>
       </div>

@@ -5,8 +5,8 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState, type FormEvent } from "react";
-import { articles, resolveArticles, type Article } from "@/lib/articles";
-import { ebooks, resolveEbooks, type Ebook } from "@/lib/ebooks";
+import { resolveArticles, type Article } from "@/lib/articles";
+import { resolveEbooks, type Ebook } from "@/lib/ebooks";
 
 export function SearchResults() {
   const router = useRouter();
@@ -14,8 +14,8 @@ export function SearchResults() {
   const initialQuery = (searchParams.get("q") || "").trim();
   const [input, setInput] = useState(initialQuery);
   const [query, setQuery] = useState(initialQuery);
-  const [articleItems, setArticleItems] = useState<Article[]>(articles);
-  const [ebookItems, setEbookItems] = useState<Ebook[]>(ebooks);
+  const [articleItems, setArticleItems] = useState<Article[]>([]);
+  const [ebookItems, setEbookItems] = useState<Ebook[]>([]);
 
   useEffect(() => {
     const q = (searchParams.get("q") || "").trim();

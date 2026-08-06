@@ -71,8 +71,9 @@ export function hasArabicScript(...texts: Array<string | undefined | null>): boo
 }
 
 /**
- * Prefer explicit API/local language, then detect Arabic in content text,
- * otherwise French. Detection is required because the backend may drop `language`.
+ * Resolve FR/AR for content.
+ * Explicit "ar" (API or local) always wins. Arabic script in the body also wins
+ * over a default/incorrect API "fr" (backend used to omit language, then defaulted to fr).
  */
 export function resolveContentLanguage(
   kind: ContentKind,
@@ -80,10 +81,11 @@ export function resolveContentLanguage(
   apiValue?: string | null,
   ...textHints: Array<string | undefined | null>
 ): ContentLanguage {
-  if (apiValue === "ar" || apiValue === "fr") return apiValue;
   const stored = getStoredContentLanguage(kind, id);
-  if (stored) return stored;
+
+  if (apiValue === "ar" || stored === "ar") return "ar";
   if (hasArabicScript(...textHints)) return "ar";
+  if (apiValue === "fr" || stored === "fr") return "fr";
   return "fr";
 }
 
@@ -137,6 +139,79 @@ export function localizeReadTime(readTime: string | undefined, language: Content
   return minutes ? `${minutes} دقائق قراءة` : "دقائق قراءة";
 }
 
+const FR_MONTHS: Record<string, number> = {
+  janvier: 0,
+  fevrier: 1,
+  février: 1,
+  mars: 2,
+  avril: 3,
+  mai: 4,
+  juin: 5,
+  juillet: 6,
+  aout: 7,
+  août: 7,
+  septembre: 8,
+  octobre: 9,
+  novembre: 10,
+  decembre: 11,
+  décembre: 11,
+};
+
+function parseFlexibleDate(value: string): Date | null {
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+
+  const iso = Date.parse(trimmed);
+  if (!Number.isNaN(iso) && /^\d{4}-\d{2}-\d{2}/.test(trimmed)) {
+    return new Date(iso);
+  }
+
+  const fr = trimmed.match(
+    /^(\d{1,2})\s+([A-Za-zÀ-ÿ]+)\s+(\d{4})$/u
+  );
+  if (fr) {
+    const day = Number(fr[1]);
+    const month = FR_MONTHS[fr[2].toLowerCase()];
+    const year = Number(fr[3]);
+    if (month !== undefined && day >= 1 && day <= 31) {
+      return new Date(year, month, day);
+    }
+  }
+
+  // Already scrambled by bidi / odd order: "août 2026 6"
+  const scrambled = trimmed.match(
+    /^([A-Za-zÀ-ÿ]+)\s+(\d{4})\s+(\d{1,2})$/u
+  );
+  if (scrambled) {
+    const month = FR_MONTHS[scrambled[1].toLowerCase()];
+    const year = Number(scrambled[2]);
+    const day = Number(scrambled[3]);
+    if (month !== undefined && day >= 1 && day <= 31) {
+      return new Date(year, month, day);
+    }
+  }
+
+  return null;
+}
+
+/** Format a content date for FR/AR and keep a stable day-month-year order. */
+export function localizeContentDate(
+  date: string | undefined,
+  language: ContentLanguage
+): string {
+  if (!date) return "";
+  if (language === "ar" && hasArabicScript(date)) return date;
+
+  const parsed = parseFlexibleDate(date);
+  if (!parsed) return date;
+
+  return parsed.toLocaleDateString(language === "ar" ? "ar" : "fr-FR", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+}
+
 export function articleUi(language?: string | null) {
   if (contentLanguage(language) === "ar") {
     return {
@@ -166,14 +241,22 @@ export function ebookUi(language?: string | null) {
       tip: "نصيحة",
       ctaTitle: "هل أنتِ مستعدة للبدء؟",
       ctaText: "حمّلي هذا الكتاب الإلكتروني وطبّقي النصائح ابتداءً من اليوم.",
+      ctaTextPaid: "هذا الدليل مدفوع. أرسلي رقم واتسابك لنرسل لكِ معلومات الدفع والتحميل.",
       downloadNow: "حمّلي الآن",
       downloadEbook: "حمّلي الكتاب الإلكتروني",
+      downloadPaid: "اطلبي عبر واتساب",
       receiveByEmail: "استلمي عبر البريد",
+      sendWhatsApp: "أرسلي عبر واتساب",
       sending: "جاري الإرسال…",
       emailPlaceholder: "بريدك الإلكتروني",
       emailLabel: "البريد الإلكتروني",
+      whatsappPlaceholder: "رقم واتسابك (مثال: 0555…)",
+      whatsappLabel: "رقم واتساب",
       sentOk: "تم إرسال رابط التحميل إلى بريدك الإلكتروني.",
+      sentOkWhatsApp: "شكراً! سنرسل لكِ معلومات هذا الدليل عبر واتساب.",
       sendError: "تعذّر إرسال الكتاب الإلكتروني.",
+      whatsappInvalid: "أدخلي رقم واتساب صالحاً.",
+      paidBadge: "مدفوع",
     };
   }
   return {
@@ -184,13 +267,22 @@ export function ebookUi(language?: string | null) {
     tip: "Conseil",
     ctaTitle: "Prêt(e) à commencer ?",
     ctaText: "Téléchargez ce e-book et appliquez les conseils dès aujourd'hui.",
+    ctaTextPaid:
+      "Ce e-book est payant. Envoyez votre numéro WhatsApp pour recevoir les infos de paiement et de téléchargement.",
     downloadNow: "TÉLÉCHARGER MAINTENANT",
     downloadEbook: "TÉLÉCHARGER LE E-BOOK",
+    downloadPaid: "DEMANDER VIA WHATSAPP",
     receiveByEmail: "RECEVOIR PAR E-MAIL",
+    sendWhatsApp: "ENVOYER SUR WHATSAPP",
     sending: "ENVOI…",
     emailPlaceholder: "Votre e-mail",
     emailLabel: "Adresse e-mail",
+    whatsappPlaceholder: "Votre numéro WhatsApp (ex: 0555…)",
+    whatsappLabel: "Numéro WhatsApp",
     sentOk: "Le lien de téléchargement a été envoyé à votre e-mail.",
+    sentOkWhatsApp: "Merci ! Les infos de ce e-book vous seront envoyées sur WhatsApp.",
     sendError: "Impossible d'envoyer le e-book.",
+    whatsappInvalid: "Entrez un numéro WhatsApp valide.",
+    paidBadge: "Payant",
   };
 }

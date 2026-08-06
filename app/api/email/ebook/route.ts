@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server";
 import { getApiBase } from "@/lib/api";
 import { isValidEmail, sendTemplateEmail } from "@/lib/mail";
-import { getEbookById } from "@/lib/ebooks";
-
 type EbookApiRow = {
   id?: string;
   title?: string;
@@ -27,13 +25,8 @@ async function resolveEbookDelivery(ebookId: string): Promise<{
       }
     }
   } catch {
-    // fall through to static catalog
+    // ignore
   }
-
-  const local = getEbookById(ebookId);
-  if (!local) return null;
-
-  // Static demo ebooks have no PDF URL yet.
   return null;
 }
 
