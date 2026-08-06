@@ -65,16 +65,76 @@ export function setStoredContentLanguage(
   writeLanguageMap(map);
 }
 
-/** Prefer API value, then local override, then French. */
+/** True when text contains Arabic letters (used when API omits language). */
+export function hasArabicScript(...texts: Array<string | undefined | null>): boolean {
+  return /[\u0600-\u06FF]/.test(texts.filter(Boolean).join(" "));
+}
+
+/**
+ * Prefer explicit API/local language, then detect Arabic in content text,
+ * otherwise French. Detection is required because the backend may drop `language`.
+ */
 export function resolveContentLanguage(
   kind: ContentKind,
   id: string | undefined | null,
-  apiValue?: string | null
+  apiValue?: string | null,
+  ...textHints: Array<string | undefined | null>
 ): ContentLanguage {
   if (apiValue === "ar" || apiValue === "fr") return apiValue;
   const stored = getStoredContentLanguage(kind, id);
   if (stored) return stored;
+  if (hasArabicScript(...textHints)) return "ar";
   return "fr";
+}
+
+/** Infer language for a public article/ebook object (SSR-safe). */
+export function inferContentLanguage(
+  item: {
+    id?: string;
+    language?: string | null;
+    title?: string;
+    subtitle?: string;
+    excerpt?: string;
+    introduction?: string;
+    description?: string;
+    tip?: string;
+    keyPoints?: string[];
+    highlights?: string[];
+  },
+  kind: ContentKind = "article"
+): ContentLanguage {
+  return resolveContentLanguage(
+    kind,
+    item.id,
+    item.language,
+    item.title,
+    item.subtitle,
+    item.excerpt,
+    item.introduction,
+    item.description,
+    item.tip,
+    ...(item.keyPoints ?? []),
+    ...(item.highlights ?? [])
+  );
+}
+
+export function localizeAuthorRole(role: string | undefined, language: ContentLanguage): string {
+  const value = (role || "").trim();
+  if (language !== "ar") return value || "Nutritionniste";
+  if (!value || /nutritionniste/i.test(value) || /nutrition/i.test(value)) {
+    return "أخصائية تغذية";
+  }
+  if (/recette/i.test(value)) return "وصفة";
+  if (hasArabicScript(value)) return value;
+  return "أخصائية تغذية";
+}
+
+export function localizeReadTime(readTime: string | undefined, language: ContentLanguage): string {
+  if (language !== "ar") return readTime || "";
+  if (!readTime) return "";
+  if (hasArabicScript(readTime)) return readTime;
+  const minutes = readTime.match(/\d+/)?.[0];
+  return minutes ? `${minutes} دقائق قراءة` : "دقائق قراءة";
 }
 
 export function articleUi(language?: string | null) {

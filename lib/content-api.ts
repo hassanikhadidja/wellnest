@@ -11,7 +11,17 @@ function estimateReadTime(text: string, language: string) {
 }
 
 export function mapDashArticle(a: DashArticle): Article {
-  const language = resolveContentLanguage("article", a.id, a.language);
+  const language = resolveContentLanguage(
+    "article",
+    a.id,
+    a.language,
+    a.title,
+    a.subtitle,
+    a.introduction,
+    a.tip,
+    ...a.keyPoints,
+    ...a.sections.map((s) => `${s.title} ${s.text}`)
+  );
   const bodyText = [a.introduction, ...a.sections.map((s) => s.text)].join(" ");
   return {
     id: a.id,
@@ -40,7 +50,17 @@ export function mapDashArticle(a: DashArticle): Article {
 }
 
 export function mapDashEbook(e: DashEbook): Ebook {
-  const language = resolveContentLanguage("ebook", e.id, e.language);
+  const language = resolveContentLanguage(
+    "ebook",
+    e.id,
+    e.language,
+    e.title,
+    e.subtitle,
+    e.about,
+    e.tip,
+    ...e.highlights,
+    ...e.summary
+  );
   const metaParts = [
     e.recipeMeta?.time,
     e.recipeMeta?.difficulty?.toUpperCase(),

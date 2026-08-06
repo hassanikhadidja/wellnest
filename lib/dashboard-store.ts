@@ -179,17 +179,29 @@ function asDashUser(u: Omit<DashUser, "password"> & { password?: string }): Dash
 
 function asDashArticle(item: Partial<DashArticle> & { id: string }): DashArticle {
   const id = String(item.id);
+  const keyPoints = Array.isArray(item.keyPoints) ? item.keyPoints : [];
+  const sections = Array.isArray(item.sections) ? item.sections : [];
   return {
     id,
-    language: resolveContentLanguage("article", id, item.language),
+    language: resolveContentLanguage(
+      "article",
+      id,
+      item.language,
+      item.title,
+      item.subtitle,
+      item.introduction,
+      item.tip,
+      ...keyPoints,
+      ...sections.map((s) => `${s.title ?? ""} ${s.text ?? ""}`)
+    ),
     categories: Array.isArray(item.categories) ? item.categories : [],
     image: item.image ?? "",
     title: item.title ?? "",
     subtitle: item.subtitle ?? "",
-    keyPoints: Array.isArray(item.keyPoints) ? item.keyPoints : [],
+    keyPoints,
     author: item.author ?? "",
     introduction: item.introduction ?? "",
-    sections: Array.isArray(item.sections) ? item.sections : [],
+    sections,
     tip: item.tip ?? "",
     tags: Array.isArray(item.tags) ? item.tags : [],
     createdAt: item.createdAt ? String(item.createdAt) : "",
@@ -198,9 +210,21 @@ function asDashArticle(item: Partial<DashArticle> & { id: string }): DashArticle
 
 function asDashEbook(item: Partial<DashEbook> & { id: string }): DashEbook {
   const id = String(item.id);
+  const highlights = Array.isArray(item.highlights) ? item.highlights : [];
+  const summary = Array.isArray(item.summary) ? item.summary : [];
   return {
     id,
-    language: resolveContentLanguage("ebook", id, item.language),
+    language: resolveContentLanguage(
+      "ebook",
+      id,
+      item.language,
+      item.title,
+      item.subtitle,
+      item.about,
+      item.tip,
+      ...highlights,
+      ...summary
+    ),
     featured: Boolean(item.featured),
     categories: Array.isArray(item.categories) ? item.categories : [],
     isRecipe: Boolean(item.isRecipe),
@@ -213,9 +237,9 @@ function asDashEbook(item: Partial<DashEbook> & { id: string }): DashEbook {
     image: item.image ?? "",
     pdfUrl: item.pdfUrl ?? "",
     pdfFileName: item.pdfFileName ?? "",
-    highlights: Array.isArray(item.highlights) ? item.highlights : [],
+    highlights,
     about: item.about ?? "",
-    summary: Array.isArray(item.summary) ? item.summary : [],
+    summary,
     tip: item.tip ?? "",
     tags: Array.isArray(item.tags) ? item.tags : [],
     createdAt: item.createdAt ? String(item.createdAt) : "",

@@ -6,7 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import {
   CONTENT_LANGUAGES,
-  contentLanguage,
+  inferContentLanguage,
   type ContentLanguage,
 } from "@/lib/content-language";
 import {
@@ -125,7 +125,7 @@ export function EbooksListing() {
 
     return items.filter((ebook) => {
       const matchLanguage =
-        language === "all" || contentLanguage(ebook.language) === language;
+        language === "all" || inferContentLanguage(ebook, "ebook") === language;
       const matchCategory =
         category === "Tous" ||
         (category === "Guides Pratiques"
@@ -152,7 +152,7 @@ export function EbooksListing() {
 
   const showFeatured =
     sortBy === "recent" &&
-    (language === "all" || contentLanguage(featuredEbook.language) === language) &&
+    (language === "all" || inferContentLanguage(featuredEbook, "ebook") === language) &&
     (category === "Tous" ||
       category === "Guides Pratiques" ||
       featuredEbook.category === category);
@@ -389,12 +389,12 @@ export function EbooksListing() {
                     </span>
                     <span
                       className={`rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide ${
-                        contentLanguage(ebook.language) === "ar"
+                        inferContentLanguage(ebook, "ebook") === "ar"
                           ? "bg-brown/15 text-brown"
                           : "bg-olive/15 text-olive"
                       }`}
                     >
-                      {contentLanguage(ebook.language) === "ar" ? "AR" : "FR"}
+                      {inferContentLanguage(ebook, "ebook") === "ar" ? "AR" : "FR"}
                     </span>
                     <span
                       className={`rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide ${
@@ -406,8 +406,8 @@ export function EbooksListing() {
                   </div>
                   <h3
                     className="mt-0.5 text-[14px] font-bold leading-snug text-ink hover:text-olive"
-                    dir={contentLanguage(ebook.language) === "ar" ? "rtl" : "ltr"}
-                    lang={contentLanguage(ebook.language)}
+                    dir={inferContentLanguage(ebook, "ebook") === "ar" ? "rtl" : "ltr"}
+                    lang={inferContentLanguage(ebook, "ebook")}
                   >
                     {ebook.title}
                   </h3>

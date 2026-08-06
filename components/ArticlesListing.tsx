@@ -6,7 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 import { articleCategories, articles, type Article, resolveArticles } from "@/lib/articles";
 import {
   CONTENT_LANGUAGES,
-  contentLanguage,
+  inferContentLanguage,
   type ContentLanguage,
 } from "@/lib/content-language";
 
@@ -24,7 +24,7 @@ export function ArticlesListing() {
     const q = query.trim().toLowerCase();
     return items.filter((article) => {
       const matchLanguage =
-        language === "all" || contentLanguage(article.language) === language;
+        language === "all" || inferContentLanguage(article, "article") === language;
       const matchCategory = category === "Tous" || article.category === category;
       const matchQuery =
         !q ||
@@ -159,7 +159,9 @@ export function ArticlesListing() {
 
         {/* Article cards */}
         <ul className="space-y-4">
-          {filtered.map((article) => (
+          {filtered.map((article) => {
+            const articleLang = inferContentLanguage(article, "article");
+            return (
             <li key={article.id}>
               <article className="flex gap-3 rounded-2xl border border-sand/70 bg-white p-3 shadow-[0_2px_10px_rgba(44,42,38,0.04)]">
                 <Link href={`/articles/${article.id}`} className="relative h-[92px] w-[92px] shrink-0 overflow-hidden rounded-xl sm:h-[104px] sm:w-[104px]">
@@ -178,27 +180,27 @@ export function ArticlesListing() {
                     </span>
                     <span
                       className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${
-                        contentLanguage(article.language) === "ar"
+                        articleLang === "ar"
                           ? "bg-brown/15 text-brown"
                           : "bg-olive/15 text-olive"
                       }`}
                     >
-                      {contentLanguage(article.language) === "ar" ? "AR" : "FR"}
+                      {articleLang === "ar" ? "AR" : "FR"}
                     </span>
                   </div>
                   <Link href={`/articles/${article.id}`}>
                     <h2
                       className="text-[14px] font-bold leading-snug text-ink hover:text-olive"
-                      dir={contentLanguage(article.language) === "ar" ? "rtl" : "ltr"}
-                      lang={contentLanguage(article.language)}
+                      dir={articleLang === "ar" ? "rtl" : "ltr"}
+                      lang={articleLang}
                     >
                       {article.title}
                     </h2>
                   </Link>
                   <p
                     className="mt-1 line-clamp-2 text-[12px] leading-relaxed text-muted"
-                    dir={contentLanguage(article.language) === "ar" ? "rtl" : "ltr"}
-                    lang={contentLanguage(article.language)}
+                    dir={articleLang === "ar" ? "rtl" : "ltr"}
+                    lang={articleLang}
                   >
                     {article.excerpt}
                   </p>
@@ -221,7 +223,8 @@ export function ArticlesListing() {
                 </div>
               </article>
             </li>
-          ))}
+            );
+          })}
         </ul>
 
         {filtered.length === 0 && (

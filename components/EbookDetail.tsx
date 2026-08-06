@@ -1,12 +1,17 @@
 import Image from "next/image";
 import Link from "next/link";
 import { EbookDownloadForm } from "@/components/EbookDownloadForm";
-import { contentLanguage, ebookUi } from "@/lib/content-language";
+import {
+  ebookUi,
+  inferContentLanguage,
+  localizeAuthorRole,
+} from "@/lib/content-language";
 import type { Ebook } from "@/lib/ebooks";
 
 export function EbookDetail({ ebook }: { ebook: Ebook }) {
-  const language = contentLanguage(ebook.language);
+  const language = inferContentLanguage(ebook, "ebook");
   const ui = ebookUi(language);
+  const authorRole = localizeAuthorRole(ebook.author.role, language);
   const shortCrumb =
     ebook.title.length > 28 ? `${ebook.title.slice(0, 28)}…` : ebook.title;
 
@@ -75,9 +80,10 @@ export function EbookDetail({ ebook }: { ebook: Ebook }) {
             </span>
             <div className="leading-tight">
               <p className="font-semibold text-ink">
-                {ui.by} {ebook.author.name}
+                <span className="me-1">{ui.by}</span>
+                {ebook.author.name}
               </p>
-              <p className="text-[11px]">{ebook.author.role}</p>
+              <p className="text-[11px]">{authorRole}</p>
             </div>
           </div>
           <span className="hidden h-8 w-px bg-sand sm:block" aria-hidden />
