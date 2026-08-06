@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
-import { Suspense } from "react";
 import { Header } from "@/components/Header";
-import { EbooksListing } from "@/components/EbooksListing";
-import { NewsletterBanner } from "@/components/NewsletterBanner";
+import { EbooksPageClient } from "@/components/EbooksPageClient";
 import { Footer } from "@/components/Footer";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
 import { resolveEbooks } from "@/lib/ebooks";
@@ -24,10 +22,10 @@ export default async function EbooksPage() {
     <>
       <Header />
       <main className="flex-1 max-[999px]:pb-16">
-        <Suspense fallback={<div className="bg-white px-4 py-10 text-center text-muted">Chargement…</div>}>
-          <EbooksListing initialEbooks={initialEbooks} initialFeatured={initialFeatured} />
-        </Suspense>
-        <NewsletterBanner />
+        <EbooksPageClient
+          initialEbooks={initialEbooks}
+          initialFeatured={initialFeatured}
+        />
       </main>
       <Footer />
       <MobileBottomNav active="Ressources" />

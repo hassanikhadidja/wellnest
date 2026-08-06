@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Header } from "@/components/Header";
-import { ArticlesListing } from "@/components/ArticlesListing";
-import { NewsletterBanner } from "@/components/NewsletterBanner";
+import { ArticlesPageClient } from "@/components/ArticlesPageClient";
 import { Footer } from "@/components/Footer";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
 import { resolveArticles } from "@/lib/articles";
@@ -21,8 +20,7 @@ export default async function ArticlesPage() {
     <>
       <Header />
       <main className="flex-1 max-[999px]:pb-16">
-        <ArticlesListing initialArticles={initialArticles} />
-        <NewsletterBanner />
+        <ArticlesPageClient initialArticles={initialArticles} />
       </main>
       <Footer />
       <MobileBottomNav active="Ressources" />

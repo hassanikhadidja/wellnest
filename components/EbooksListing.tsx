@@ -6,6 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import {
   CONTENT_LANGUAGES,
+  ebooksPageUi,
   inferContentLanguage,
   localizeContentDate,
   type ContentLanguage,
@@ -17,13 +18,6 @@ import {
   type Ebook,
   type SortFilter,
 } from "@/lib/ebooks";
-
-const reasons = [
-  { label: "Contenus rédigés par des experts", icon: "star" },
-  { label: "Conseils pratiques et faciles à appliquer", icon: "leaf" },
-  { label: "Téléchargement immédiat", icon: "download" },
-  { label: "Paiement sécurisé et confidentiel", icon: "lock" },
-];
 
 function ReasonIcon({ type }: { type: string }) {
   if (type === "star") {
@@ -70,9 +64,11 @@ function ReasonIcon({ type }: { type: string }) {
 export function EbooksListing({
   initialEbooks = [],
   initialFeatured = null,
+  onUiLanguageChange,
 }: {
   initialEbooks?: Ebook[];
   initialFeatured?: Ebook | null;
+  onUiLanguageChange?: (language: ContentLanguage) => void;
 }) {
   const searchParams = useSearchParams();
   const [query, setQuery] = useState("");
@@ -83,6 +79,10 @@ export function EbooksListing({
   const [items, setItems] = useState<Ebook[]>(initialEbooks);
   const [featuredEbook, setFeaturedEbook] = useState<Ebook | null>(initialFeatured);
 
+  const uiLang: ContentLanguage = language === "ar" ? "ar" : "fr";
+  const ui = ebooksPageUi(uiLang);
+  const isAr = uiLang === "ar";
+
   useEffect(() => {
     // One fetch only — featured is derived from the same list.
     void resolveEbooks().then((list) => {
@@ -90,6 +90,10 @@ export function EbooksListing({
       setFeaturedEbook(list.find((ebook) => ebook.featured) ?? list[0] ?? null);
     });
   }, []);
+
+  useEffect(() => {
+    onUiLanguageChange?.(uiLang);
+  }, [uiLang, onUiLanguageChange]);
 
   useEffect(() => {
     const categoryParam = searchParams.get("category");
@@ -168,16 +172,30 @@ export function EbooksListing({
       category === "Guides Pratiques" ||
       featuredEbook.category === category);
 
-  const activeSortLabel = sortFilters.find((item) => item.id === sortBy)?.label ?? "Plus récentes";
+  const activeSortLabel =
+    ui.sortFilters[sortBy] ??
+    sortFilters.find((item) => item.id === sortBy)?.label ??
+    ui.sortFilters.recent;
   const featuredCover =
     featuredEbook?.image?.trim() || "/images/article-1.jpg";
 
   return (
-    <div className="bg-white pb-10 pt-4">
+    <div
+      className="bg-white pb-10 pt-4"
+      dir={isAr ? "rtl" : "ltr"}
+      lang={uiLang}
+    >
       <div className="mx-auto max-w-[900px] px-4 sm:px-6">
         {/* Breadcrumbs */}
-        <nav className="mb-5 flex items-center gap-1.5 text-[12px] text-muted" aria-label="Fil d'Ariane">
-          <Link href="/" className="inline-flex items-center text-olive hover:underline" aria-label="Accueil">
+        <nav
+          className="mb-5 flex items-center gap-1.5 text-[12px] text-muted"
+          aria-label={isAr ? "مسار التنقل" : "Fil d'Ariane"}
+        >
+          <Link
+            href="/"
+            className="inline-flex items-center text-olive hover:underline"
+            aria-label={ui.home}
+          >
             <svg viewBox="0 0 20 20" className="h-3.5 w-3.5" fill="none" aria-hidden>
               <path
                 d="M3.5 9.5L10 4L16.5 9.5V16.5H12V12H8V16.5H3.5V9.5Z"
@@ -189,20 +207,20 @@ export function EbooksListing({
           </Link>
           <span className="text-ink/30">›</span>
           <Link href="/" className="hover:text-olive">
-            Accueil
+            {ui.home}
           </Link>
           <span className="text-ink/30">›</span>
-          <span className="font-medium text-ink">E-books</span>
+          <span className="font-medium text-ink">{ui.ebooks}</span>
         </nav>
 
         {/* Title */}
         <div className="mb-6 flex items-start justify-between gap-4">
           <div className="min-w-0">
             <h1 className="font-display text-[1.85rem] font-semibold leading-tight text-olive sm:text-4xl">
-              Nos e-books
+              {ui.title}
             </h1>
             <p className="mt-2 max-w-md text-[13px] leading-relaxed text-muted">
-              Des guides pratiques et complets à télécharger pour vous accompagner à chaque étape.
+              {ui.subtitle}
             </p>
           </div>
           <div className="relative h-16 w-16 shrink-0 sm:h-[72px] sm:w-[72px]" aria-hidden>
@@ -218,8 +236,12 @@ export function EbooksListing({
 
         {/* Search */}
         <label className="relative mb-4 block">
-          <span className="sr-only">Rechercher un e-book</span>
-          <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-muted">
+          <span className="sr-only">{ui.searchLabel}</span>
+          <span
+            className={`pointer-events-none absolute inset-y-0 flex items-center text-muted ${
+              isAr ? "right-3" : "left-3"
+            }`}
+          >
             <svg viewBox="0 0 20 20" className="h-4 w-4" fill="none" aria-hidden>
               <circle cx="9" cy="9" r="5.5" stroke="currentColor" strokeWidth="1.4" />
               <path d="M13 13L17 17" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
@@ -229,8 +251,10 @@ export function EbooksListing({
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Rechercher un e-book..."
-            className="w-full rounded-full border border-sand bg-cream/60 py-2.5 pl-10 pr-4 text-[13px] text-ink outline-none placeholder:text-muted focus:border-olive focus:ring-1 focus:ring-olive/30"
+            placeholder={ui.searchPlaceholder}
+            className={`w-full rounded-full border border-sand bg-cream/60 py-2.5 text-[13px] text-ink outline-none placeholder:text-muted focus:border-olive focus:ring-1 focus:ring-olive/30 ${
+              isAr ? "pl-4 pr-10" : "pl-10 pr-4"
+            }`}
           />
         </label>
 
@@ -238,7 +262,7 @@ export function EbooksListing({
         <div className="mb-3 flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {(
             [
-              { id: "all" as const, label: "Toutes les langues" },
+              { id: "all" as const, label: ui.allLanguages },
               ...CONTENT_LANGUAGES.map((item) => ({ id: item.id, label: item.label })),
             ] as const
           ).map((item) => {
@@ -275,7 +299,7 @@ export function EbooksListing({
                     : "border border-sand bg-white text-ink/70 hover:border-olive/40 hover:text-olive"
                 }`}
               >
-                {item}
+                {ui.categories[item] ?? item}
               </button>
             );
           })}
@@ -343,17 +367,18 @@ export function EbooksListing({
 
         {/* List header */}
         <div className="mb-4 flex items-center justify-between gap-3">
-          <h2 className="font-display text-xl font-semibold text-ink">Tous nos e-books</h2>
+          <h2 className="font-display text-xl font-semibold text-ink">{ui.allEbooks}</h2>
           <div className="relative">
             <button
               type="button"
               onClick={() => setSortOpen((open) => !open)}
-              className="flex max-w-[220px] items-center gap-1.5 text-left text-[12px] text-muted"
+              className="flex max-w-[220px] items-center gap-1.5 text-[12px] text-muted"
               aria-expanded={sortOpen}
               aria-haspopup="listbox"
             >
               <span>
-                Trier par : <span className="font-semibold text-ink">{activeSortLabel}</span>
+                {ui.sortBy}{" "}
+                <span className="font-semibold text-ink">{activeSortLabel}</span>
               </span>
               <svg
                 viewBox="0 0 12 12"
@@ -367,7 +392,9 @@ export function EbooksListing({
             {sortOpen && (
               <ul
                 role="listbox"
-                className="absolute right-0 z-20 mt-2 min-w-[230px] overflow-hidden rounded-xl border border-sand bg-white py-1 shadow-[0_8px_24px_rgba(44,42,38,0.12)]"
+                className={`absolute z-20 mt-2 min-w-[230px] overflow-hidden rounded-xl border border-sand bg-white py-1 shadow-[0_8px_24px_rgba(44,42,38,0.12)] ${
+                  isAr ? "left-0" : "right-0"
+                }`}
               >
                 {sortFilters.map((option) => (
                   <li key={option.id}>
@@ -379,13 +406,15 @@ export function EbooksListing({
                         setSortBy(option.id);
                         setSortOpen(false);
                       }}
-                      className={`block w-full px-3 py-2 text-left text-[12px] transition-colors ${
+                      className={`block w-full px-3 py-2 text-[12px] transition-colors ${
+                        isAr ? "text-right" : "text-left"
+                      } ${
                         sortBy === option.id
                           ? "bg-cream font-semibold text-olive"
                           : "text-ink/80 hover:bg-cream/70"
                       }`}
                     >
-                      {option.label}
+                      {ui.sortFilters[option.id] ?? option.label}
                     </button>
                   </li>
                 ))}
@@ -401,6 +430,7 @@ export function EbooksListing({
             .map((ebook) => {
               const ebookLang = inferContentLanguage(ebook, "ebook");
               const displayDate = localizeContentDate(ebook.date, ebookLang);
+              const categoryLabel = ui.categories[ebook.category] ?? ebook.category;
               return (
             <li key={ebook.id}>
               <article className="flex items-center gap-3 rounded-2xl border border-sand/70 bg-white p-3 shadow-[0_2px_10px_rgba(44,42,38,0.04)]">
@@ -410,7 +440,7 @@ export function EbooksListing({
                 <Link href={`/ebooks/${ebook.id}`} className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-1.5">
                     <span className="text-[10px] font-bold uppercase tracking-wide text-olive">
-                      {ebook.category}
+                      {categoryLabel}
                     </span>
                     <span
                       className={`rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide ${
@@ -426,7 +456,7 @@ export function EbooksListing({
                         ebook.pricing === "free" ? "bg-olive/15 text-olive" : "bg-sand text-brown"
                       }`}
                     >
-                      {ebook.pricing === "free" ? "Gratuit" : "Payant"}
+                      {ebook.pricing === "free" ? ui.free : ui.paid}
                     </span>
                   </div>
                   <h3
@@ -449,7 +479,7 @@ export function EbooksListing({
                     <path d="M10 3V12M7 9L10 12L13 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                     <path d="M4 15H16" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
                   </svg>
-                  TÉLÉCHARGER
+                  {ui.download}
                 </Link>
               </article>
             </li>
@@ -458,19 +488,19 @@ export function EbooksListing({
         </ul>
 
         {filtered.length === 0 && (
-          <p className="py-10 text-center text-[13px] text-muted">Aucun e-book ne correspond à votre recherche.</p>
+          <p className="py-10 text-center text-[13px] text-muted">{ui.empty}</p>
         )}
 
         {/* Why section */}
         <section className="mt-10">
           <h2 className="mb-5 text-center font-display text-xl font-semibold text-ink">
-            Pourquoi choisir nos e-books ?
+            {ui.whyTitle}
           </h2>
           <ul className="grid grid-cols-2 gap-4">
-            {reasons.map((reason) => (
-              <li key={reason.label} className="flex flex-col items-center gap-2 text-center">
+            {ui.reasons.map((reason) => (
+              <li key={reason.id} className="flex flex-col items-center gap-2 text-center">
                 <span className="flex h-12 w-12 items-center justify-center rounded-full bg-cream text-olive">
-                  <ReasonIcon type={reason.icon} />
+                  <ReasonIcon type={reason.id} />
                 </span>
                 <p className="text-[12px] font-medium leading-snug text-ink/80">{reason.label}</p>
               </li>

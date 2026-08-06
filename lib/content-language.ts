@@ -286,3 +286,156 @@ export function ebookUi(language?: string | null) {
     paidBadge: "Payant",
   };
 }
+
+/** UI chrome for the public articles listing page. */
+export function articlesPageUi(language?: string | null) {
+  if (contentLanguage(language) === "ar") {
+    return {
+      home: "الرئيسية",
+      articles: "المقالات",
+      title: "كل المقالات",
+      subtitle: "اكتشفي نصائحنا وأدلتنا وأخبارنا لحياة أكثر صحة في كل مرحلة.",
+      searchLabel: "البحث عن مقال",
+      searchPlaceholder: "ابحثي عن مقال...",
+      allLanguages: "كل اللغات",
+      sortBy: "ترتيب حسب :",
+      sortRecent: "الأحدث",
+      empty: "لا يوجد مقال يطابق بحثك.",
+      categories: {
+        Tous: "الكل",
+        "Nutrition Maman": "تغذية الأم",
+        "Bébé & Enfant": "الرضيع والطفل",
+        "Santé Globale": "الصحة الشاملة",
+        "Bien-être": "العافية",
+      } as Record<string, string>,
+    };
+  }
+  return {
+    home: "Accueil",
+    articles: "Articles",
+    title: "Tous les articles",
+    subtitle: "Découvrez nos conseils, guides et actualités pour une vie plus saine à chaque étape.",
+    searchLabel: "Rechercher un article",
+    searchPlaceholder: "Rechercher un article...",
+    allLanguages: "Toutes les langues",
+    sortBy: "Trier par :",
+    sortRecent: "Plus récents",
+    empty: "Aucun article ne correspond à votre recherche.",
+    categories: {
+      Tous: "Tous",
+      "Nutrition Maman": "Nutrition Maman",
+      "Bébé & Enfant": "Bébé & Enfant",
+      "Santé Globale": "Santé Globale",
+      "Bien-être": "Bien-être",
+    } as Record<string, string>,
+  };
+}
+
+export function newsletterUi(language?: string | null) {
+  if (contentLanguage(language) === "ar") {
+    return {
+      title: "ابقي على اطلاع",
+      subtitle: "استلمي نصائح التغذية وآخر المستجدات.",
+      emailLabel: "البريد الإلكتروني",
+      emailPlaceholder: "بريدك الإلكتروني",
+      submit: "اشتركي",
+      thanks: "شكراً! تم تسجيل بريدك الإلكتروني.",
+      error: "تعذّر الاشتراك.",
+    };
+  }
+  return {
+    title: "Restez informé(e)",
+    subtitle: "Recevez nos conseils nutrition et nouveautés.",
+    emailLabel: "Adresse e-mail",
+    emailPlaceholder: "Votre e-mail",
+    submit: "S'INSCRIRE",
+    thanks: "Merci ! Votre email a été enregistré.",
+    error: "Erreur d'inscription.",
+  };
+}
+
+/** UI chrome for the public e-books / blog listing page. */
+export function ebooksPageUi(language?: string | null) {
+  if (contentLanguage(language) === "ar") {
+    return {
+      home: "الرئيسية",
+      ebooks: "الكتب الإلكترونية",
+      title: "كتبنا الإلكترونية",
+      subtitle: "أدلة عملية وكاملة للتحميل ترافقكِ في كل مرحلة.",
+      searchLabel: "البحث عن كتاب",
+      searchPlaceholder: "ابحثي عن كتاب إلكتروني...",
+      allLanguages: "كل اللغات",
+      allEbooks: "كل كتبنا الإلكترونية",
+      sortBy: "ترتيب حسب :",
+      empty: "لا يوجد كتاب يطابق بحثك.",
+      loading: "جاري التحميل…",
+      download: "تحميل",
+      free: "مجاني",
+      paid: "مدفوع",
+      whyTitle: "لماذا تختارين كتبنا الإلكترونية؟",
+      reasons: [
+        { id: "star", label: "محتويات من إعداد خبيرات" },
+        { id: "leaf", label: "نصائح عملية وسهلة التطبيق" },
+        { id: "download", label: "تحميل فوري" },
+        { id: "lock", label: "دفع آمن وسري" },
+      ],
+      categories: {
+        Tous: "الكل",
+        "Nutrition Maman": "تغذية الأم",
+        "Bébé & Enfant": "الرضيع والطفل",
+        "Santé Globale": "الصحة الشاملة",
+        "Bien-être": "العافية",
+        Recettes: "وصفات",
+        "Guides Pratiques": "أدلة عملية",
+      } as Record<string, string>,
+      sortFilters: {
+        recent: "الأحدث",
+        "recipe-free": "وصفات مجانية",
+        "recipe-paid": "وصفات مدفوعة",
+        "grocery-free": "قائمة تسوق مجانية",
+        "grocery-paid": "قائمة تسوق مدفوعة",
+        ebook: "أدلة عملية",
+      } as Record<string, string>,
+    };
+  }
+  return {
+    home: "Accueil",
+    ebooks: "E-books",
+    title: "Nos e-books",
+    subtitle: "Des guides pratiques et complets à télécharger pour vous accompagner à chaque étape.",
+    searchLabel: "Rechercher un e-book",
+    searchPlaceholder: "Rechercher un e-book...",
+    allLanguages: "Toutes les langues",
+    allEbooks: "Tous nos e-books",
+    sortBy: "Trier par :",
+    empty: "Aucun e-book ne correspond à votre recherche.",
+    loading: "Chargement…",
+    download: "TÉLÉCHARGER",
+    free: "Gratuit",
+    paid: "Payant",
+    whyTitle: "Pourquoi choisir nos e-books ?",
+    reasons: [
+      { id: "star", label: "Contenus rédigés par des experts" },
+      { id: "leaf", label: "Conseils pratiques et faciles à appliquer" },
+      { id: "download", label: "Téléchargement immédiat" },
+      { id: "lock", label: "Paiement sécurisé et confidentiel" },
+    ],
+    categories: {
+      Tous: "Tous",
+      "Nutrition Maman": "Nutrition Maman",
+      "Bébé & Enfant": "Bébé & Enfant",
+      "Santé Globale": "Santé Globale",
+      "Bien-être": "Bien-être",
+      Recettes: "Recettes",
+      "Guides Pratiques": "Guides Pratiques",
+    } as Record<string, string>,
+    sortFilters: {
+      recent: "Plus récentes",
+      "recipe-free": "Recettes gratuites",
+      "recipe-paid": "Recettes payantes",
+      "grocery-free": "Liste de courses gratuite",
+      "grocery-paid": "Liste de courses payante",
+      ebook: "Guides Pratiques",
+    } as Record<string, string>,
+  };
+}
