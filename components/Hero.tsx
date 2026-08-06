@@ -145,7 +145,7 @@ export function Hero() {
             />
           </svg>
 
-          <div className="hero-overlay-card animate-fade-up animate-delay-3 absolute bottom-8 left-1/2 z-10 w-[min(92%,320px)] -translate-x-[calc(50%-50px)] rounded-xl bg-white/95 p-5 text-center shadow-[0_8px_30px_rgba(44,42,38,0.12)] backdrop-blur-sm sm:bottom-12">
+          <div className="hero-overlay-card animate-fade-up animate-delay-3 absolute bottom-8 left-1/2 z-30 w-[min(92%,320px)] -translate-x-[calc(50%-50px)] rounded-xl bg-white/95 p-5 text-center shadow-[0_8px_30px_rgba(44,42,38,0.12)] backdrop-blur-sm sm:bottom-12">
             <p className="font-arabic text-[15px] font-semibold leading-relaxed text-ink" dir="rtl">
               غذاء صحي لعائلة أكثر سعادة
             </p>
@@ -154,16 +154,16 @@ export function Hero() {
             </p>
             <Link
               href="/questionnaire"
-              className="mt-4 inline-flex items-center justify-center rounded-md bg-olive px-5 py-2.5 text-[11px] font-semibold tracking-[0.08em] text-white transition-colors hover:bg-olive-dark"
+              className="relative z-30 mt-4 inline-flex items-center justify-center rounded-md bg-olive px-5 py-2.5 text-[11px] font-semibold tracking-[0.08em] text-white transition-colors hover:bg-olive-dark"
             >
               DÉCOUVRIR PLUS
             </Link>
           </div>
         </div>
 
-        {/* Content column */}
-        <div className="hero-content-wrap relative z-10 mx-auto flex h-full max-w-[1400px] items-center px-6 py-8 pl-28 sm:px-10 sm:pl-36 min-[1000px]:px-14 min-[1000px]:pl-44 xl:px-16 xl:pl-48">
-          <div className="hero-inner animate-fade-up flex w-full max-w-xl flex-col items-center min-[1000px]:w-[42%]">
+        {/* Content column — pointer-events-none so it does not block the overlay CTA on the photo */}
+        <div className="hero-content-wrap pointer-events-none relative z-10 mx-auto flex h-full max-w-[1400px] items-center px-6 py-8 pl-28 sm:px-10 sm:pl-36 min-[1000px]:px-14 min-[1000px]:pl-44 xl:px-16 xl:pl-48">
+          <div className="hero-inner pointer-events-auto animate-fade-up flex w-full max-w-xl flex-col items-center min-[1000px]:w-[42%]">
             <div className="hero-brand-block mb-5 flex w-full max-w-md -translate-x-[70px] flex-col items-center max-[999px]:mb-0">
               <h1 className="sr-only">WELLNEST — بيت العافية</h1>
 
