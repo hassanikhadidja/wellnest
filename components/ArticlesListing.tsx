@@ -172,35 +172,19 @@ export function ArticlesListing() {
                   />
                 </Link>
                 <div className="min-w-0 flex-1">
-                  <div className="mb-1 flex items-start justify-between gap-2">
-                    <div className="flex flex-wrap items-center gap-1.5">
-                      <span className="rounded-full bg-cream px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-olive">
-                        {article.category}
-                      </span>
-                      <span
-                        className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${
-                          contentLanguage(article.language) === "ar"
-                            ? "bg-brown/15 text-brown"
-                            : "bg-olive/15 text-olive"
-                        }`}
-                      >
-                        {contentLanguage(article.language) === "ar" ? "AR" : "FR"}
-                      </span>
-                    </div>
-                    <button
-                      type="button"
-                      className="shrink-0 text-ink/35 transition-colors hover:text-olive"
-                      aria-label="Enregistrer l'article"
+                  <div className="mb-1 flex flex-wrap items-center gap-1.5">
+                    <span className="rounded-full bg-cream px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-olive">
+                      {article.category}
+                    </span>
+                    <span
+                      className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${
+                        contentLanguage(article.language) === "ar"
+                          ? "bg-brown/15 text-brown"
+                          : "bg-olive/15 text-olive"
+                      }`}
                     >
-                      <svg viewBox="0 0 20 20" className="h-4 w-4" fill="none" aria-hidden>
-                        <path
-                          d="M5 3.5H15V16.5L10 13.5L5 16.5V3.5Z"
-                          stroke="currentColor"
-                          strokeWidth="1.4"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
-                    </button>
+                      {contentLanguage(article.language) === "ar" ? "AR" : "FR"}
+                    </span>
                   </div>
                   <Link href={`/articles/${article.id}`}>
                     <h2

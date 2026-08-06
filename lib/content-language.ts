@@ -4,6 +4,9 @@ export const CONTENT_LANGUAGES = [
 ] as const;
 
 export type ContentLanguage = (typeof CONTENT_LANGUAGES)[number]["id"];
+export type ContentKind = "article" | "ebook";
+
+const LANG_STORE_KEY = "wellnest-content-language-v1";
 
 export function contentLanguage(value?: string | null): ContentLanguage {
   return value === "ar" ? "ar" : "fr";
@@ -11,6 +14,67 @@ export function contentLanguage(value?: string | null): ContentLanguage {
 
 export function contentLanguageLabel(value?: string | null): string {
   return contentLanguage(value) === "ar" ? "العربية" : "Français";
+}
+
+function readLanguageMap(): Record<string, ContentLanguage> {
+  if (typeof window === "undefined") return {};
+  try {
+    const raw = window.localStorage.getItem(LANG_STORE_KEY);
+    if (!raw) return {};
+    const parsed = JSON.parse(raw) as Record<string, unknown>;
+    const out: Record<string, ContentLanguage> = {};
+    for (const [key, value] of Object.entries(parsed)) {
+      if (value === "ar" || value === "fr") out[key] = value;
+    }
+    return out;
+  } catch {
+    return {};
+  }
+}
+
+function writeLanguageMap(map: Record<string, ContentLanguage>) {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(LANG_STORE_KEY, JSON.stringify(map));
+  } catch {
+    // ignore quota / private mode
+  }
+}
+
+function languageStoreKey(kind: ContentKind, id: string) {
+  return `${kind}:${id}`;
+}
+
+/** Explicit FR/AR override when the API does not persist `language`. */
+export function getStoredContentLanguage(
+  kind: ContentKind,
+  id?: string | null
+): ContentLanguage | undefined {
+  if (!id) return undefined;
+  return readLanguageMap()[languageStoreKey(kind, id)];
+}
+
+export function setStoredContentLanguage(
+  kind: ContentKind,
+  id: string | undefined | null,
+  language: ContentLanguage
+) {
+  if (!id || typeof window === "undefined") return;
+  const map = readLanguageMap();
+  map[languageStoreKey(kind, id)] = contentLanguage(language);
+  writeLanguageMap(map);
+}
+
+/** Prefer API value, then local override, then French. */
+export function resolveContentLanguage(
+  kind: ContentKind,
+  id: string | undefined | null,
+  apiValue?: string | null
+): ContentLanguage {
+  if (apiValue === "ar" || apiValue === "fr") return apiValue;
+  const stored = getStoredContentLanguage(kind, id);
+  if (stored) return stored;
+  return "fr";
 }
 
 export function articleUi(language?: string | null) {

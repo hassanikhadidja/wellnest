@@ -7,6 +7,7 @@ import {
   CONTENT_LANGUAGES,
   contentLanguage,
   contentLanguageLabel,
+  setStoredContentLanguage,
   type ContentLanguage,
 } from "@/lib/content-language";
 import {
@@ -258,24 +259,43 @@ function LanguagePicker({
   onChange: (next: ContentLanguage) => void;
 }) {
   return (
-    <div className="flex flex-wrap gap-2">
-      {CONTENT_LANGUAGES.map((lang) => {
-        const active = value === lang.id;
-        return (
-          <button
-            key={lang.id}
-            type="button"
-            onClick={() => onChange(lang.id)}
-            className={`rounded-full px-3 py-1 text-[11px] font-semibold ${
-              active ? "bg-olive text-white" : "bg-cream text-ink/70"
-            }`}
-          >
-            {lang.short} — {lang.label}
-          </button>
-        );
-      })}
+    <div className="space-y-1.5">
+      <span className="mb-1 block text-[12px] font-semibold text-ink">Langue</span>
+      <div className="flex flex-wrap gap-2" role="group" aria-label="Langue du contenu">
+        {CONTENT_LANGUAGES.map((lang) => {
+          const active = value === lang.id;
+          return (
+            <button
+              key={lang.id}
+              type="button"
+              aria-pressed={active}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onChange(lang.id);
+              }}
+              className={`rounded-full px-3.5 py-1.5 text-[11px] font-semibold transition-colors ${
+                active
+                  ? "bg-olive text-white"
+                  : "border border-sand bg-white text-ink/70 hover:border-olive/40 hover:text-olive"
+              }`}
+            >
+              {lang.short} — {lang.label}
+            </button>
+          );
+        })}
+      </div>
+      <p className="text-[11px] text-muted">
+        {value === "ar"
+          ? "Langue actuelle : العربية — écriture de droite à gauche activée."
+          : "Langue actuelle : Français — cliquez sur AR pour passer en arabe (et inversement)."}
+      </p>
     </div>
   );
+}
+
+function textDir(language?: string | null): "rtl" | "ltr" {
+  return contentLanguage(language) === "ar" ? "rtl" : "ltr";
 }
 
 function LanguageBadge({ language }: { language?: string | null }) {
@@ -944,12 +964,13 @@ export function DashboardPanel() {
               });
             }}
           >
-            <Field label="Langue">
-              <LanguagePicker
-                value={contentLanguage(articleForm.language)}
-                onChange={(language) => setArticleForm({ ...articleForm, language })}
-              />
-            </Field>
+            <LanguagePicker
+              value={contentLanguage(articleForm.language)}
+              onChange={(language) => {
+                setStoredContentLanguage("article", articleForm.id, language);
+                setArticleForm((prev) => (prev ? { ...prev, language } : prev));
+              }}
+            />
             <Field label="Catégories (une ou plusieurs)">
               <CategoryPicker
                 value={articleForm.categories}
@@ -967,36 +988,52 @@ export function DashboardPanel() {
               <input
                 className={inputClass}
                 required
-                dir={contentLanguage(articleForm.language) === "ar" ? "rtl" : "ltr"}
+                dir={textDir(articleForm.language)}
                 lang={contentLanguage(articleForm.language)}
                 value={articleForm.title}
                 onChange={(e) => setArticleForm({ ...articleForm, title: e.target.value })}
               />
             </Field>
             <Field label="Sous-titre">
-              <input className={inputClass} value={articleForm.subtitle} onChange={(e) => setArticleForm({ ...articleForm, subtitle: e.target.value })} />
+              <input
+                className={inputClass}
+                dir={textDir(articleForm.language)}
+                lang={contentLanguage(articleForm.language)}
+                value={articleForm.subtitle}
+                onChange={(e) => setArticleForm({ ...articleForm, subtitle: e.target.value })}
+              />
             </Field>
             <Field label="Points clés à retenir (1 par ligne)">
-              <textarea className={`${inputClass} min-h-[90px]`} value={keyPointsText} onChange={(e) => setKeyPointsText(e.target.value)} />
+              <textarea
+                className={`${inputClass} min-h-[90px]`}
+                dir={textDir(articleForm.language)}
+                lang={contentLanguage(articleForm.language)}
+                value={keyPointsText}
+                onChange={(e) => setKeyPointsText(e.target.value)}
+              />
             </Field>
             <Field label="Par...">
-              <input className={inputClass} value={articleForm.author} onChange={(e) => setArticleForm({ ...articleForm, author: e.target.value })} placeholder="Dr. Leila Benyamina" />
+              <input
+                className={inputClass}
+                dir={textDir(articleForm.language)}
+                lang={contentLanguage(articleForm.language)}
+                value={articleForm.author}
+                onChange={(e) => setArticleForm({ ...articleForm, author: e.target.value })}
+                placeholder="Dr. Leila Benyamina"
+              />
             </Field>
             <Field label="Introduction">
-              <textarea className={`${inputClass} min-h-[90px]`} value={articleForm.introduction} onChange={(e) => setArticleForm({ ...articleForm, introduction: e.target.value })} />
+              <textarea
+                className={`${inputClass} min-h-[90px]`}
+                dir={textDir(articleForm.language)}
+                lang={contentLanguage(articleForm.language)}
+                value={articleForm.introduction}
+                onChange={(e) => setArticleForm({ ...articleForm, introduction: e.target.value })}
+              />
             </Field>
 
             <div className="space-y-3 rounded-xl border border-sand/70 p-3">
-              <div className="flex items-center justify-between">
-                <p className="text-[13px] font-semibold">Sections</p>
-                <button
-                  type="button"
-                  className="text-[12px] font-semibold text-olive"
-                  onClick={() => setArticleForm({ ...articleForm, sections: [...articleForm.sections, newSection()] })}
-                >
-                  + Section
-                </button>
-              </div>
+              <p className="text-[13px] font-semibold">Sections</p>
               {articleForm.sections.map((section, index) => (
                 <div key={section.id} className="space-y-2 rounded-lg bg-cream/50 p-3">
                   <div className="flex justify-between gap-2">
@@ -1016,18 +1053,45 @@ export function DashboardPanel() {
                       </button>
                     )}
                   </div>
-                  <input className={inputClass} placeholder="Titre" value={section.title} onChange={(e) => {
-                    const sections = articleForm.sections.map((s) => (s.id === section.id ? { ...s, title: e.target.value } : s));
-                    setArticleForm({ ...articleForm, sections });
-                  }} />
-                  <input className={inputClass} placeholder="Note (optionnel)" value={section.note} onChange={(e) => {
-                    const sections = articleForm.sections.map((s) => (s.id === section.id ? { ...s, note: e.target.value } : s));
-                    setArticleForm({ ...articleForm, sections });
-                  }} />
-                  <textarea className={`${inputClass} min-h-[70px]`} placeholder="Texte" value={section.text} onChange={(e) => {
-                    const sections = articleForm.sections.map((s) => (s.id === section.id ? { ...s, text: e.target.value } : s));
-                    setArticleForm({ ...articleForm, sections });
-                  }} />
+                  <input
+                    className={inputClass}
+                    placeholder="Titre"
+                    dir={textDir(articleForm.language)}
+                    lang={contentLanguage(articleForm.language)}
+                    value={section.title}
+                    onChange={(e) => {
+                      const sections = articleForm.sections.map((s) =>
+                        s.id === section.id ? { ...s, title: e.target.value } : s
+                      );
+                      setArticleForm({ ...articleForm, sections });
+                    }}
+                  />
+                  <input
+                    className={inputClass}
+                    placeholder="Note (optionnel)"
+                    dir={textDir(articleForm.language)}
+                    lang={contentLanguage(articleForm.language)}
+                    value={section.note}
+                    onChange={(e) => {
+                      const sections = articleForm.sections.map((s) =>
+                        s.id === section.id ? { ...s, note: e.target.value } : s
+                      );
+                      setArticleForm({ ...articleForm, sections });
+                    }}
+                  />
+                  <textarea
+                    className={`${inputClass} min-h-[70px]`}
+                    placeholder="Texte"
+                    dir={textDir(articleForm.language)}
+                    lang={contentLanguage(articleForm.language)}
+                    value={section.text}
+                    onChange={(e) => {
+                      const sections = articleForm.sections.map((s) =>
+                        s.id === section.id ? { ...s, text: e.target.value } : s
+                      );
+                      setArticleForm({ ...articleForm, sections });
+                    }}
+                  />
                   <ImageUrlField
                     label="Image section (URL ou appareil)"
                     value={section.image}
@@ -1042,10 +1106,28 @@ export function DashboardPanel() {
                   />
                 </div>
               ))}
+              <button
+                type="button"
+                className="inline-flex w-full items-center justify-center rounded-full border border-olive/30 bg-olive/10 px-4 py-2.5 text-[12px] font-bold tracking-wide text-olive transition-colors hover:bg-olive hover:text-white"
+                onClick={() =>
+                  setArticleForm({
+                    ...articleForm,
+                    sections: [...articleForm.sections, newSection()],
+                  })
+                }
+              >
+                + Section
+              </button>
             </div>
 
             <Field label="Conseil">
-              <textarea className={`${inputClass} min-h-[70px]`} value={articleForm.tip} onChange={(e) => setArticleForm({ ...articleForm, tip: e.target.value })} />
+              <textarea
+                className={`${inputClass} min-h-[70px]`}
+                dir={textDir(articleForm.language)}
+                lang={contentLanguage(articleForm.language)}
+                value={articleForm.tip}
+                onChange={(e) => setArticleForm({ ...articleForm, tip: e.target.value })}
+              />
             </Field>
             <Field label="Tags (séparés par des virgules)">
               <input className={inputClass} value={articleTags} onChange={(e) => setArticleTags(e.target.value)} />
@@ -1088,12 +1170,13 @@ export function DashboardPanel() {
               />
               E-BOOK À LA UNE
             </label>
-            <Field label="Langue">
-              <LanguagePicker
-                value={contentLanguage(ebookForm.language)}
-                onChange={(language) => setEbookForm({ ...ebookForm, language })}
-              />
-            </Field>
+            <LanguagePicker
+              value={contentLanguage(ebookForm.language)}
+              onChange={(language) => {
+                setStoredContentLanguage("ebook", ebookForm.id, language);
+                setEbookForm((prev) => (prev ? { ...prev, language } : prev));
+              }}
+            />
             <Field label="Catégories (une ou plusieurs)">
               <CategoryPicker
                 value={ebookForm.categories}
@@ -1141,7 +1224,7 @@ export function DashboardPanel() {
               <input
                 className={inputClass}
                 required
-                dir={contentLanguage(ebookForm.language) === "ar" ? "rtl" : "ltr"}
+                dir={textDir(ebookForm.language)}
                 lang={contentLanguage(ebookForm.language)}
                 value={ebookForm.title}
                 onChange={(e) => setEbookForm({ ...ebookForm, title: e.target.value })}
@@ -1150,14 +1233,20 @@ export function DashboardPanel() {
             <Field label="Sous-titre">
               <input
                 className={inputClass}
-                dir={contentLanguage(ebookForm.language) === "ar" ? "rtl" : "ltr"}
+                dir={textDir(ebookForm.language)}
                 lang={contentLanguage(ebookForm.language)}
                 value={ebookForm.subtitle}
                 onChange={(e) => setEbookForm({ ...ebookForm, subtitle: e.target.value })}
               />
             </Field>
             <Field label="Par...">
-              <input className={inputClass} value={ebookForm.author} onChange={(e) => setEbookForm({ ...ebookForm, author: e.target.value })} />
+              <input
+                className={inputClass}
+                dir={textDir(ebookForm.language)}
+                lang={contentLanguage(ebookForm.language)}
+                value={ebookForm.author}
+                onChange={(e) => setEbookForm({ ...ebookForm, author: e.target.value })}
+              />
             </Field>
             <Field label="Livraison">
               <select
@@ -1206,16 +1295,40 @@ export function DashboardPanel() {
               )}
             </Field>
             <Field label="Ce que vous allez trouver (1 par ligne)">
-              <textarea className={`${inputClass} min-h-[80px]`} value={highlightsText} onChange={(e) => setHighlightsText(e.target.value)} />
+              <textarea
+                className={`${inputClass} min-h-[80px]`}
+                dir={textDir(ebookForm.language)}
+                lang={contentLanguage(ebookForm.language)}
+                value={highlightsText}
+                onChange={(e) => setHighlightsText(e.target.value)}
+              />
             </Field>
             <Field label="À propos de ce guide">
-              <textarea className={`${inputClass} min-h-[80px]`} value={ebookForm.about} onChange={(e) => setEbookForm({ ...ebookForm, about: e.target.value })} />
+              <textarea
+                className={`${inputClass} min-h-[80px]`}
+                dir={textDir(ebookForm.language)}
+                lang={contentLanguage(ebookForm.language)}
+                value={ebookForm.about}
+                onChange={(e) => setEbookForm({ ...ebookForm, about: e.target.value })}
+              />
             </Field>
             <Field label="Sommaire (1 par ligne)">
-              <textarea className={`${inputClass} min-h-[80px]`} value={summaryText} onChange={(e) => setSummaryText(e.target.value)} />
+              <textarea
+                className={`${inputClass} min-h-[80px]`}
+                dir={textDir(ebookForm.language)}
+                lang={contentLanguage(ebookForm.language)}
+                value={summaryText}
+                onChange={(e) => setSummaryText(e.target.value)}
+              />
             </Field>
             <Field label="Conseil">
-              <textarea className={`${inputClass} min-h-[70px]`} value={ebookForm.tip} onChange={(e) => setEbookForm({ ...ebookForm, tip: e.target.value })} />
+              <textarea
+                className={`${inputClass} min-h-[70px]`}
+                dir={textDir(ebookForm.language)}
+                lang={contentLanguage(ebookForm.language)}
+                value={ebookForm.tip}
+                onChange={(e) => setEbookForm({ ...ebookForm, tip: e.target.value })}
+              />
             </Field>
             <Field label="Tags (séparés par des virgules)">
               <input className={inputClass} value={ebookTags} onChange={(e) => setEbookTags(e.target.value)} />

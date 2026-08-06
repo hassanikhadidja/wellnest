@@ -1,6 +1,6 @@
 import { getApiBase } from "@/lib/api";
 import type { Article } from "@/lib/articles";
-import { contentLanguage } from "@/lib/content-language";
+import { resolveContentLanguage } from "@/lib/content-language";
 import type { Ebook } from "@/lib/ebooks";
 import type { DashArticle, DashEbook } from "@/lib/dashboard-store";
 
@@ -11,7 +11,7 @@ function estimateReadTime(text: string, language: string) {
 }
 
 export function mapDashArticle(a: DashArticle): Article {
-  const language = contentLanguage(a.language);
+  const language = resolveContentLanguage("article", a.id, a.language);
   const bodyText = [a.introduction, ...a.sections.map((s) => s.text)].join(" ");
   return {
     id: a.id,
@@ -40,7 +40,7 @@ export function mapDashArticle(a: DashArticle): Article {
 }
 
 export function mapDashEbook(e: DashEbook): Ebook {
-  const language = contentLanguage(e.language);
+  const language = resolveContentLanguage("ebook", e.id, e.language);
   const metaParts = [
     e.recipeMeta?.time,
     e.recipeMeta?.difficulty?.toUpperCase(),

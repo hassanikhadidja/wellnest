@@ -8,6 +8,8 @@ import {
 } from "@/lib/api";
 import {
   contentLanguage,
+  resolveContentLanguage,
+  setStoredContentLanguage,
   type ContentLanguage,
 } from "@/lib/content-language";
 import {
@@ -176,9 +178,10 @@ function asDashUser(u: Omit<DashUser, "password"> & { password?: string }): Dash
 }
 
 function asDashArticle(item: Partial<DashArticle> & { id: string }): DashArticle {
+  const id = String(item.id);
   return {
-    id: String(item.id),
-    language: contentLanguage(item.language),
+    id,
+    language: resolveContentLanguage("article", id, item.language),
     categories: Array.isArray(item.categories) ? item.categories : [],
     image: item.image ?? "",
     title: item.title ?? "",
@@ -194,9 +197,10 @@ function asDashArticle(item: Partial<DashArticle> & { id: string }): DashArticle
 }
 
 function asDashEbook(item: Partial<DashEbook> & { id: string }): DashEbook {
+  const id = String(item.id);
   return {
-    id: String(item.id),
-    language: contentLanguage(item.language),
+    id,
+    language: resolveContentLanguage("ebook", id, item.language),
     featured: Boolean(item.featured),
     categories: Array.isArray(item.categories) ? item.categories : [],
     isRecipe: Boolean(item.isRecipe),
@@ -383,8 +387,9 @@ export async function deleteUser(id: string) {
 export async function saveArticle(
   input: Omit<DashArticle, "id" | "createdAt"> & { id?: string }
 ) {
+  const language = contentLanguage(input.language);
   const body = {
-    language: contentLanguage(input.language),
+    language,
     categories: input.categories,
     image: input.image,
     title: input.title,
@@ -403,9 +408,12 @@ export async function saveArticle(
       auth: true,
       body,
     });
+    setStoredContentLanguage("article", input.id, language);
     const store = readCache();
     store.articles = store.articles.map((a) =>
-      a.id === input.id ? asDashArticle(updated) : a
+      a.id === input.id
+        ? asDashArticle({ ...updated, language: updated.language ?? language })
+        : a
     );
     writeCache(store);
     return;
@@ -416,8 +424,11 @@ export async function saveArticle(
     auth: true,
     body,
   });
+  setStoredContentLanguage("article", created.id, language);
   const store = readCache();
-  store.articles.unshift(asDashArticle(created));
+  store.articles.unshift(
+    asDashArticle({ ...created, language: created.language ?? language })
+  );
   writeCache(store);
 }
 
@@ -431,8 +442,9 @@ export async function deleteArticle(id: string) {
 export async function saveEbook(
   input: Omit<DashEbook, "id" | "createdAt"> & { id?: string }
 ) {
+  const language = contentLanguage(input.language);
   const body = {
-    language: contentLanguage(input.language),
+    language,
     featured: input.featured,
     categories: input.categories,
     isRecipe: input.isRecipe,
@@ -458,9 +470,12 @@ export async function saveEbook(
       auth: true,
       body,
     });
+    setStoredContentLanguage("ebook", input.id, language);
     const store = readCache();
     store.ebooks = store.ebooks.map((e) =>
-      e.id === input.id ? asDashEbook(updated) : e
+      e.id === input.id
+        ? asDashEbook({ ...updated, language: updated.language ?? language })
+        : e
     );
     writeCache(store);
     return;
@@ -471,8 +486,11 @@ export async function saveEbook(
     auth: true,
     body,
   });
+  setStoredContentLanguage("ebook", created.id, language);
   const store = readCache();
-  store.ebooks.unshift(asDashEbook(created));
+  store.ebooks.unshift(
+    asDashEbook({ ...created, language: created.language ?? language })
+  );
   writeCache(store);
 }
 
