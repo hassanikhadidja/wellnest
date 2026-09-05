@@ -6,9 +6,9 @@ import { Footer } from "@/components/Footer";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
 
 export const metadata: Metadata = {
-  title: "Questionnaire Diététique & Analyse Nutri-Profil — WELLNEST",
+  title: "Questionnaire Diététique & Nutri-Profil — WELLNEST",
   description:
-    "Répondez à quelques questions pour recevoir des recommandations nutritionnelles personnalisées.",
+    "Un questionnaire simple et personnalisé pour les enfants, adolescentes, femmes et mamans.",
 };
 
 type PageProps = {
