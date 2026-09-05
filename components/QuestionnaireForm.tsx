@@ -722,8 +722,6 @@ export function QuestionnaireForm({
           </>
         )}
 
-        {step === "who" && null}
-
         {step === "body" && (
           <>
             <PartHeader
