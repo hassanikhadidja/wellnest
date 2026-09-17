@@ -34,6 +34,7 @@ export type QuestionnaireAnswers = {
   activityLevel: string;
   cookingTime: string;
   mealPlace: string;
+  foodBudget: string;
   healthConditions: string[];
   healthOther?: string;
   treatment: string;

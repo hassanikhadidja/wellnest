@@ -135,6 +135,7 @@ function buildTextFallback(
         "",
         `Bonjour ${params.first_name ?? ""},`,
         "Nous avons bien reçu votre questionnaire.",
+        "Votre journée type gratuite (repas + liste de courses) est disponible sur le site.",
         `Nous vous recontactons bientôt à ${params.to_email ?? ""}.`,
         "",
         `Site : ${SITE_URL}`,

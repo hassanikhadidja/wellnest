@@ -6,6 +6,11 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { requestEmail } from "@/lib/email-client";
 import {
+  generateNutritionPackage,
+  toClientNutritionPackage,
+} from "@/lib/nutrition";
+import { saveClientNutritionPlan } from "@/lib/nutrition/client-storage";
+import {
   filterByIds,
   markQuestionnaireDone,
   needsGuardianRole,
@@ -35,6 +40,7 @@ import {
   dietModes,
   digestionOptions,
   energyLevels,
+  foodBudgets,
   foodRefusals,
   fruitVegPlaces,
   guardianRoles,
@@ -203,6 +209,7 @@ export function QuestionnaireForm({
   const [activityLevel, setActivityLevel] = useState("");
   const [cookingTime, setCookingTime] = useState("");
   const [mealPlace, setMealPlace] = useState("");
+  const [foodBudget, setFoodBudget] = useState("");
 
   const [healthConditionsSelected, setHealthConditionsSelected] = useState<string[]>([]);
   const [healthOther, setHealthOther] = useState("");
@@ -443,7 +450,7 @@ export function QuestionnaireForm({
         }
         break;
       case "lifestyle":
-        if (!activityLevel || !cookingTime || !mealPlace) {
+        if (!activityLevel || !cookingTime || !mealPlace || !foodBudget) {
           setError("Merci de répondre aux questions sur l'activité et le rythme de vie.");
           return false;
         }
@@ -529,6 +536,7 @@ export function QuestionnaireForm({
       activityLevel,
       cookingTime,
       mealPlace,
+      foodBudget,
       healthConditions: healthConditionsSelected,
       healthOther: healthConditionsSelected.includes("autre") ? healthOther.trim() : undefined,
       treatment,
@@ -544,6 +552,14 @@ export function QuestionnaireForm({
     };
 
     await markQuestionnaireDone(answers);
+
+    try {
+      const pkg = generateNutritionPackage(answers);
+      saveClientNutritionPlan(toClientNutritionPackage(pkg));
+    } catch (err) {
+      console.error("Client nutrition plan error:", err);
+    }
+
     await requestEmail("/api/email/questionnaire", answers);
 
     if (nextPath && nextPath.startsWith("/")) {
@@ -552,7 +568,7 @@ export function QuestionnaireForm({
       router.push(`${nextPath}?${params.toString()}`);
       return;
     }
-    router.push("/programmes?result=1");
+    router.push("/bilan");
   }
 
   function handleBack() {
@@ -1053,6 +1069,20 @@ export function QuestionnaireForm({
                 />
               ))}
             </QuestionCard>
+            <QuestionCard title="26. Quel budget alimentaire hebdomadaire souhaitez-vous respecter ?">
+              <p className="-mt-2 mb-3 text-[12px] leading-relaxed text-muted">
+                Pour la personne concernée ou le foyer, selon votre situation. Cela permet
+                d&apos;adapter les menus et la liste de courses à un cadre réaliste.
+              </p>
+              {foodBudgets.map((item) => (
+                <OptionButton
+                  key={item.id}
+                  selected={foodBudget === item.id}
+                  label={item.label}
+                  onClick={() => setFoodBudget(item.id)}
+                />
+              ))}
+            </QuestionCard>
           </>
         )}
 
@@ -1062,7 +1092,7 @@ export function QuestionnaireForm({
               title="PARTIE 7 — Santé : uniquement si concerné(e)"
               description="Cette partie permet de repérer les éléments nécessitant une adaptation ou un avis médical. Elle ne remplace pas un diagnostic médical."
             />
-            <QuestionCard title="26. Existe-t-il une condition de santé connue ?">
+            <QuestionCard title="27. Existe-t-il une condition de santé connue ?">
               {visibleHealthConditions.map((item) => (
                 <OptionButton
                   key={item.id}
@@ -1086,7 +1116,7 @@ export function QuestionnaireForm({
                 />
               )}
             </QuestionCard>
-            <QuestionCard title="27. Y a-t-il un traitement ou complément pris régulièrement ?">
+            <QuestionCard title="28. Y a-t-il un traitement ou complément pris régulièrement ?">
               {treatmentOptions.map((item) => (
                 <OptionButton
                   key={item.id}
@@ -1114,7 +1144,7 @@ export function QuestionnaireForm({
               title="PARTIE 8 — Questions spécifiques filles & femmes"
               description="À remplir uniquement si la personne concernée est une fille ou une femme."
             />
-            <QuestionCard title="28. Situation actuelle :">
+            <QuestionCard title="29. Situation actuelle :">
               {visibleWomenSituations.map((item) => (
                 <OptionButton
                   key={item.id}
@@ -1129,7 +1159,7 @@ export function QuestionnaireForm({
                 />
               ))}
             </QuestionCard>
-            <QuestionCard title="29. Si vous avez vos règles, sont-elles :">
+            <QuestionCard title="30. Si vous avez vos règles, sont-elles :">
               {periodOptions.map((item) => (
                 <OptionButton
                   key={item.id}
@@ -1145,7 +1175,7 @@ export function QuestionnaireForm({
               ))}
             </QuestionCard>
             {showPregnancyDetail && (
-              <QuestionCard title="30. Si vous êtes enceinte ou allaitez, précisez :">
+              <QuestionCard title="31. Si vous êtes enceinte ou allaitez, précisez :">
                 {pregnancyDetails.map((item) => (
                   <OptionButton
                     key={item.id}
@@ -1170,7 +1200,7 @@ export function QuestionnaireForm({
               title="PARTIE 9 — Enfant & adolescente : questions spécifiques"
               description="À remplir uniquement si le bilan concerne un enfant ou une adolescente."
             />
-            <QuestionCard title="31. Concernant l'enfant / l'adolescente, y a-t-il :">
+            <QuestionCard title="32. Concernant l'enfant / l'adolescente, y a-t-il :">
               {childIssues.map((item) => (
                 <OptionButton
                   key={item.id}
@@ -1185,7 +1215,7 @@ export function QuestionnaireForm({
                 />
               ))}
             </QuestionCard>
-            <QuestionCard title="32. Le rythme scolaire / activités influence-t-il les repas ?">
+            <QuestionCard title="33. Le rythme scolaire / activités influence-t-il les repas ?">
               {schoolInfluences.map((item) => (
                 <OptionButton
                   key={item.id}
@@ -1204,7 +1234,7 @@ export function QuestionnaireForm({
         {step === "support" && (
           <>
             <PartHeader title="PARTIE 10 — Stress, environnement & accompagnement" />
-            <QuestionCard title="33. Niveau de stress / charge mentale :">
+            <QuestionCard title="34. Niveau de stress / charge mentale :">
               {stressLevels.map((item) => (
                 <OptionButton
                   key={item.id}
@@ -1214,7 +1244,7 @@ export function QuestionnaireForm({
                 />
               ))}
             </QuestionCard>
-            <QuestionCard title="34. Quel type d'accompagnement vous conviendrait le mieux ?">
+            <QuestionCard title="35. Quel type d'accompagnement vous conviendrait le mieux ?">
               {visibleAccompaniment.map((item) => (
                 <OptionButton
                   key={item.id}
@@ -1233,7 +1263,7 @@ export function QuestionnaireForm({
             </QuestionCard>
             <section className="mb-5 rounded-2xl border border-sand/70 bg-white p-4 shadow-[0_2px_12px_rgba(44,42,38,0.04)] sm:p-5">
               <h3 className="text-[15px] font-bold text-ink">
-                35. Y a-t-il quelque chose d&apos;important que vous souhaitez nous préciser ?
+                36. Y a-t-il quelque chose d&apos;important que vous souhaitez nous préciser ?
               </h3>
               <textarea
                 value={freeNote}

@@ -45,8 +45,8 @@ export function ProgrammesPage({ initialPlan = null }: { initialPlan?: string | 
     if (plan.isFree) {
       setMessage(
         trackName
-          ? `Votre essai gratuit de ${plan.duration} est prêt, adapté au ${trackName}.`
-          : `Votre essai gratuit de ${plan.duration} est prêt. Votre plan sera adapté à vos réponses du questionnaire.`,
+          ? `Votre journée type gratuite est prête (adaptée au ${trackName}). Consultez /bilan.`
+          : `Votre journée type gratuite est prête après le questionnaire. Consultez la page Bilan.`,
       );
       return;
     }

@@ -5,6 +5,9 @@ import {
   isValidEmail,
   sendTemplateEmail,
 } from "@/lib/mail";
+import { generateNutritionPackage } from "@/lib/nutrition";
+import { buildAdminPlansHtml } from "@/lib/nutrition/admin-html";
+import type { QuestionnaireAnswers } from "@/lib/questionnaire";
 
 type QuestionnaireBody = Record<string, unknown>;
 
@@ -37,6 +40,7 @@ const LABELS: { key: string; label: string }[] = [
   { key: "activityLevel", label: "Activité physique" },
   { key: "cookingTime", label: "Temps de préparation" },
   { key: "mealPlace", label: "Lieu des repas" },
+  { key: "foodBudget", label: "Budget alimentaire hebdomadaire" },
   { key: "healthConditions", label: "Conditions de santé" },
   { key: "healthOther", label: "Santé (autre)" },
   { key: "treatment", label: "Traitement / complément" },
@@ -90,7 +94,17 @@ export async function POST(request: Request) {
       );
     }
 
-    const answersHtml = buildAnswersHtml(body);
+    let plansHtml = "";
+    try {
+      const pkg = generateNutritionPackage(body as unknown as QuestionnaireAnswers);
+      plansHtml = buildAdminPlansHtml(pkg);
+    } catch (planErr) {
+      console.error("Nutrition plan generation error:", planErr);
+      plansHtml =
+        "<p style='color:#a15c2d;font-size:13px;'>Échec de génération automatique des plans 30/90 jours — vérifier les réponses.</p>";
+    }
+
+    const answersHtml = `${buildAnswersHtml(body)}${plansHtml}`;
 
     await Promise.all([
       sendTemplateEmail({

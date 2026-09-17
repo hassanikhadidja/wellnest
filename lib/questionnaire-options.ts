@@ -184,6 +184,14 @@ export const mealPlaces = [
   { id: "mixte", label: "Mixte" },
 ] as const;
 
+export const foodBudgets = [
+  { id: "moins-3000", label: "Moins de 3 000 DA / semaine" },
+  { id: "3000-6000", label: "3 000 à 6 000 DA / semaine" },
+  { id: "6000-10000", label: "6 000 à 10 000 DA / semaine" },
+  { id: "plus-10000", label: "Plus de 10 000 DA / semaine" },
+  { id: "non-precise", label: "Je préfère ne pas indiquer de budget précis" },
+] as const;
+
 export const healthConditions = [
   { id: "aucune", label: "Aucune" },
   { id: "anemie", label: "Anémie / carence en fer" },
