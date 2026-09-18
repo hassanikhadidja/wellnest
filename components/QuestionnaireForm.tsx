@@ -568,7 +568,7 @@ export function QuestionnaireForm({
       router.push(`${nextPath}?${params.toString()}`);
       return;
     }
-    router.push("/bilan");
+    router.push("/programmes?result=1");
   }
 
   function handleBack() {

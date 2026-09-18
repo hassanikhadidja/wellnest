@@ -1,0 +1,1437 @@
+[
+  {
+    "id": "BF-001",
+    "nameFr": "Œufs brouillés, pain complet, huile d’olive",
+    "composition": "2 œufs + pain complet 80 g + huile 10 g",
+    "portionG": 250,
+    "kcalServing": 490,
+    "protein": 27,
+    "carbs": 44,
+    "fat": 22,
+    "fiber": 6,
+    "lines": [
+      {
+        "name": "2 œufs",
+        "quantity": "2 œufs"
+      },
+      {
+        "name": "pain complet",
+        "quantity": "80 g"
+      },
+      {
+        "name": "huile",
+        "quantity": "10 g"
+      }
+    ]
+  },
+  {
+    "id": "BF-002",
+    "nameFr": "Pain complet + fromage frais",
+    "composition": "Pain complet 2 tranches (≈80 g) + fromage frais 30 g",
+    "portionG": 110,
+    "kcalServing": 290,
+    "protein": 11,
+    "carbs": 43,
+    "fat": 8,
+    "fiber": 6,
+    "lines": [
+      {
+        "name": "Pain complet 2 tranches",
+        "quantity": "80 g"
+      },
+      {
+        "name": "fromage frais",
+        "quantity": "30 g"
+      }
+    ]
+  },
+  {
+    "id": "BF-003",
+    "nameFr": "Pain complet, fromage fondu, confiture, fruit",
+    "composition": "Pain 60 g + fromage fondu 30 g + confiture 10 g + fruit 100 g",
+    "portionG": 200,
+    "kcalServing": 390,
+    "protein": 11,
+    "carbs": 65,
+    "fat": 10,
+    "fiber": 8,
+    "lines": [
+      {
+        "name": "Pain",
+        "quantity": "60 g"
+      },
+      {
+        "name": "fromage fondu",
+        "quantity": "30 g"
+      },
+      {
+        "name": "confiture",
+        "quantity": "10 g"
+      },
+      {
+        "name": "fruit",
+        "quantity": "100 g"
+      }
+    ]
+  },
+  {
+    "id": "BF-004",
+    "nameFr": "Muesli au lait et fruits secs",
+    "composition": "Muesli 40 g + lait 200 ml + fruits secs (portion estimée 15 g)",
+    "portionG": 255,
+    "kcalServing": 330,
+    "protein": 11,
+    "carbs": 52,
+    "fat": 9,
+    "fiber": 5,
+    "lines": [
+      {
+        "name": "Muesli",
+        "quantity": "40 g"
+      },
+      {
+        "name": "lait",
+        "quantity": "200 ml"
+      },
+      {
+        "name": "fruits secs portion estimée",
+        "quantity": "15 g"
+      }
+    ]
+  },
+  {
+    "id": "BF-005",
+    "nameFr": "Smoothie bowl avoine, yaourt, fruits rouges, amandes",
+    "composition": "Avoine 50 g + yaourt 100 g + fruits rouges 100 g + amandes 10 g",
+    "portionG": 260,
+    "kcalServing": 360,
+    "protein": 17,
+    "carbs": 49,
+    "fat": 11,
+    "fiber": 9,
+    "lines": [
+      {
+        "name": "Avoine",
+        "quantity": "50 g"
+      },
+      {
+        "name": "yaourt",
+        "quantity": "100 g"
+      },
+      {
+        "name": "fruits rouges",
+        "quantity": "100 g"
+      },
+      {
+        "name": "amandes",
+        "quantity": "10 g"
+      }
+    ]
+  },
+  {
+    "id": "BF-006",
+    "nameFr": "Pain complet, fromage allégé, confiture, pomme, noix",
+    "composition": "Pain 60 g + fromage allégé 30 g + confiture 10 g + pomme 100 g + noix 5 g",
+    "portionG": 205,
+    "kcalServing": 355,
+    "protein": 12,
+    "carbs": 58,
+    "fat": 9,
+    "fiber": 9,
+    "lines": [
+      {
+        "name": "Pain",
+        "quantity": "60 g"
+      },
+      {
+        "name": "fromage allégé",
+        "quantity": "30 g"
+      },
+      {
+        "name": "confiture",
+        "quantity": "10 g"
+      },
+      {
+        "name": "pomme",
+        "quantity": "100 g"
+      },
+      {
+        "name": "noix",
+        "quantity": "5 g"
+      }
+    ]
+  },
+  {
+    "id": "BF-007",
+    "nameFr": "Pain complet, thon, beurre",
+    "composition": "Pain 80 g + thon 60 g + beurre 5 g",
+    "portionG": 145,
+    "kcalServing": 365,
+    "protein": 25,
+    "carbs": 40,
+    "fat": 10,
+    "fiber": 6,
+    "lines": [
+      {
+        "name": "Pain",
+        "quantity": "80 g"
+      },
+      {
+        "name": "thon",
+        "quantity": "60 g"
+      },
+      {
+        "name": "beurre",
+        "quantity": "5 g"
+      }
+    ]
+  },
+  {
+    "id": "BF-008",
+    "nameFr": "Pain complet, thon, concombre",
+    "composition": "Pain 60 g + thon 50 g + concombre 50 g",
+    "portionG": 160,
+    "kcalServing": 260,
+    "protein": 20,
+    "carbs": 31,
+    "fat": 5,
+    "fiber": 5,
+    "lines": [
+      {
+        "name": "Pain",
+        "quantity": "60 g"
+      },
+      {
+        "name": "thon",
+        "quantity": "50 g"
+      },
+      {
+        "name": "concombre",
+        "quantity": "50 g"
+      }
+    ]
+  },
+  {
+    "id": "BF-009",
+    "nameFr": "Muffin banane complet",
+    "composition": "Banane 60 g + farine complète 40 g + œuf 1 + huile 5 g",
+    "portionG": 155,
+    "kcalServing": 355,
+    "protein": 9,
+    "carbs": 49,
+    "fat": 13,
+    "fiber": 5,
+    "lines": [
+      {
+        "name": "Banane",
+        "quantity": "60 g"
+      },
+      {
+        "name": "farine complète",
+        "quantity": "40 g"
+      },
+      {
+        "name": "Œufs",
+        "quantity": "1 œufs"
+      },
+      {
+        "name": "huile",
+        "quantity": "5 g"
+      }
+    ]
+  },
+  {
+    "id": "BF-010",
+    "nameFr": "Crêpes complètes, lait, œuf, beurre d’amande, banane",
+    "composition": "Farine 60 g + lait 150 ml + œuf 1 + beurre d’amande 10 g + banane 80 g",
+    "portionG": 310,
+    "kcalServing": 500,
+    "protein": 19,
+    "carbs": 72,
+    "fat": 15,
+    "fiber": 9,
+    "lines": [
+      {
+        "name": "Farine",
+        "quantity": "60 g"
+      },
+      {
+        "name": "lait",
+        "quantity": "150 ml"
+      },
+      {
+        "name": "Œufs",
+        "quantity": "1 œufs"
+      },
+      {
+        "name": "beurre d’amande",
+        "quantity": "10 g"
+      },
+      {
+        "name": "banane",
+        "quantity": "80 g"
+      }
+    ]
+  },
+  {
+    "id": "BF-011",
+    "nameFr": "Pain, fromage, œuf dur",
+    "composition": "Pain 40 g estimés + fromage 30 g + œuf 1",
+    "portionG": 120,
+    "kcalServing": 300,
+    "protein": 16,
+    "carbs": 25,
+    "fat": 15,
+    "fiber": 3,
+    "lines": [
+      {
+        "name": "Pain  estimés",
+        "quantity": "40 g"
+      },
+      {
+        "name": "fromage",
+        "quantity": "30 g"
+      },
+      {
+        "name": "Œufs",
+        "quantity": "1 œufs"
+      }
+    ]
+  },
+  {
+    "id": "BF-012",
+    "nameFr": "Pancakes avoine, lait, œuf, miel",
+    "composition": "Avoine 60 g + lait 150 ml + œuf 1 + miel 10 g",
+    "portionG": 270,
+    "kcalServing": 420,
+    "protein": 21,
+    "carbs": 57,
+    "fat": 12,
+    "fiber": 6,
+    "lines": [
+      {
+        "name": "Avoine",
+        "quantity": "60 g"
+      },
+      {
+        "name": "lait",
+        "quantity": "150 ml"
+      },
+      {
+        "name": "Œufs",
+        "quantity": "1 œufs"
+      },
+      {
+        "name": "miel",
+        "quantity": "10 g"
+      }
+    ]
+  },
+  {
+    "id": "BF-013",
+    "nameFr": "Toast protéiné seigle, fromage blanc, œuf, tomate",
+    "composition": "Pain seigle 80 g + fromage blanc 100 g + œuf 1 + tomate 1",
+    "portionG": 330,
+    "kcalServing": 390,
+    "protein": 27,
+    "carbs": 53,
+    "fat": 7,
+    "fiber": 9,
+    "lines": [
+      {
+        "name": "Pain seigle",
+        "quantity": "80 g"
+      },
+      {
+        "name": "fromage blanc",
+        "quantity": "100 g"
+      },
+      {
+        "name": "Œufs",
+        "quantity": "1 œufs"
+      },
+      {
+        "name": "tomate 1",
+        "quantity": "1 portion"
+      }
+    ]
+  },
+  {
+    "id": "BF-014",
+    "nameFr": "Avoine, yaourt, miel, amandes, poire",
+    "composition": "Avoine 40 g + yaourt 125 g + miel 5 g + amandes 10 g + poire 100 g",
+    "portionG": 280,
+    "kcalServing": 370,
+    "protein": 15,
+    "carbs": 57,
+    "fat": 10,
+    "fiber": 9,
+    "lines": [
+      {
+        "name": "Avoine",
+        "quantity": "40 g"
+      },
+      {
+        "name": "yaourt",
+        "quantity": "125 g"
+      },
+      {
+        "name": "miel",
+        "quantity": "5 g"
+      },
+      {
+        "name": "amandes",
+        "quantity": "10 g"
+      },
+      {
+        "name": "poire",
+        "quantity": "100 g"
+      }
+    ]
+  },
+  {
+    "id": "BF-015",
+    "nameFr": "Smoothie yaourt, demi-banane, fruits",
+    "composition": "Yaourt 125 g + ½ banane + fruits 50 g estimés",
+    "portionG": 225,
+    "kcalServing": 170,
+    "protein": 6,
+    "carbs": 31,
+    "fat": 3,
+    "fiber": 3,
+    "lines": [
+      {
+        "name": "Yaourt",
+        "quantity": "125 g"
+      },
+      {
+        "name": "½ banane",
+        "quantity": "1 portion"
+      },
+      {
+        "name": "fruits  estimés",
+        "quantity": "50 g"
+      }
+    ]
+  },
+  {
+    "id": "BF-016",
+    "nameFr": "Tartine beurre de cacahuète et banane",
+    "composition": "Pain complet 40 g + beurre cacahuète 5 g + petite banane 100 g",
+    "portionG": 145,
+    "kcalServing": 270,
+    "protein": 8,
+    "carbs": 47,
+    "fat": 7,
+    "fiber": 6,
+    "lines": [
+      {
+        "name": "Pain complet",
+        "quantity": "40 g"
+      },
+      {
+        "name": "beurre cacahuète",
+        "quantity": "5 g"
+      },
+      {
+        "name": "petite banane",
+        "quantity": "100 g"
+      }
+    ]
+  },
+  {
+    "id": "BF-017",
+    "nameFr": "Porridge avoine, lait, fruits secs",
+    "composition": "Avoine 50 g + lait 250 ml + fruits secs 15 g estimés",
+    "portionG": 315,
+    "kcalServing": 390,
+    "protein": 15,
+    "carbs": 62,
+    "fat": 10,
+    "fiber": 7,
+    "lines": [
+      {
+        "name": "Avoine",
+        "quantity": "50 g"
+      },
+      {
+        "name": "lait",
+        "quantity": "250 ml"
+      },
+      {
+        "name": "fruits secs  estimés",
+        "quantity": "15 g"
+      }
+    ]
+  },
+  {
+    "id": "BF-018",
+    "nameFr": "Smoothie bowl banane, yaourt grec, granola, noix, fruits rouges",
+    "composition": "Banane 120 g + yaourt grec 100 g + granola 30 g + noix 20 g + fruits rouges 50 g",
+    "portionG": 320,
+    "kcalServing": 540,
+    "protein": 19,
+    "carbs": 68,
+    "fat": 23,
+    "fiber": 10,
+    "lines": [
+      {
+        "name": "Banane",
+        "quantity": "120 g"
+      },
+      {
+        "name": "yaourt grec",
+        "quantity": "100 g"
+      },
+      {
+        "name": "granola",
+        "quantity": "30 g"
+      },
+      {
+        "name": "noix",
+        "quantity": "20 g"
+      },
+      {
+        "name": "fruits rouges",
+        "quantity": "50 g"
+      }
+    ]
+  },
+  {
+    "id": "BF-019",
+    "nameFr": "Yaourt, granola, fruit frais",
+    "composition": "Yaourt 150 g + granola 20 g + fruit 100 g",
+    "portionG": 270,
+    "kcalServing": 290,
+    "protein": 9,
+    "carbs": 46,
+    "fat": 8,
+    "fiber": 5,
+    "lines": [
+      {
+        "name": "Yaourt",
+        "quantity": "150 g"
+      },
+      {
+        "name": "granola",
+        "quantity": "20 g"
+      },
+      {
+        "name": "fruit",
+        "quantity": "100 g"
+      }
+    ]
+  },
+  {
+    "id": "BF-020",
+    "nameFr": "Tartines complètes, œuf, fromage frais, tomate, huile",
+    "composition": "Pain 50 g + œuf 1 + fromage frais 20 g + tomates 50 g + huile 5 g",
+    "portionG": 175,
+    "kcalServing": 330,
+    "protein": 14,
+    "carbs": 27,
+    "fat": 18,
+    "fiber": 4,
+    "lines": [
+      {
+        "name": "Pain",
+        "quantity": "50 g"
+      },
+      {
+        "name": "Œufs",
+        "quantity": "1 œufs"
+      },
+      {
+        "name": "fromage frais",
+        "quantity": "20 g"
+      },
+      {
+        "name": "tomates",
+        "quantity": "50 g"
+      },
+      {
+        "name": "huile",
+        "quantity": "5 g"
+      }
+    ]
+  },
+  {
+    "id": "BF-021",
+    "nameFr": "Pain complet, ricotta, miel, amandes",
+    "composition": "Pain 80 g + ricotta 40 g + miel 10 g + amandes 10 g",
+    "portionG": 140,
+    "kcalServing": 390,
+    "protein": 14,
+    "carbs": 53,
+    "fat": 14,
+    "fiber": 7,
+    "lines": [
+      {
+        "name": "Pain",
+        "quantity": "80 g"
+      },
+      {
+        "name": "ricotta",
+        "quantity": "40 g"
+      },
+      {
+        "name": "miel",
+        "quantity": "10 g"
+      },
+      {
+        "name": "amandes",
+        "quantity": "10 g"
+      }
+    ]
+  },
+  {
+    "id": "BF-022",
+    "nameFr": "Muffins banane, farine complète, œuf, yaourt, huile",
+    "composition": "Farine 40 g + banane 80 g + œuf 50 g + yaourt 60 g + huile 5 g",
+    "portionG": 235,
+    "kcalServing": 390,
+    "protein": 13,
+    "carbs": 58,
+    "fat": 12,
+    "fiber": 6,
+    "lines": [
+      {
+        "name": "Farine",
+        "quantity": "40 g"
+      },
+      {
+        "name": "banane",
+        "quantity": "80 g"
+      },
+      {
+        "name": "œuf",
+        "quantity": "50 g"
+      },
+      {
+        "name": "yaourt",
+        "quantity": "60 g"
+      },
+      {
+        "name": "huile",
+        "quantity": "5 g"
+      }
+    ]
+  },
+  {
+    "id": "BF-023",
+    "nameFr": "Pain, œuf poché, fromage frais, huile, orange",
+    "composition": "Pain 60 g estimés + œuf 60 g + fromage frais 40 g + huile 5 g + orange 150 g",
+    "portionG": 315,
+    "kcalServing": 430,
+    "protein": 17,
+    "carbs": 54,
+    "fat": 16,
+    "fiber": 8,
+    "lines": [
+      {
+        "name": "Pain  estimés",
+        "quantity": "60 g"
+      },
+      {
+        "name": "œuf",
+        "quantity": "60 g"
+      },
+      {
+        "name": "fromage frais",
+        "quantity": "40 g"
+      },
+      {
+        "name": "huile",
+        "quantity": "5 g"
+      },
+      {
+        "name": "orange",
+        "quantity": "150 g"
+      }
+    ]
+  },
+  {
+    "id": "BF-024",
+    "nameFr": "Kesraa complète, fromage allégé, pomme",
+    "composition": "Kesraa 80 g estimés + fromage allégé 30 g + pomme 150 g",
+    "portionG": 260,
+    "kcalServing": 390,
+    "protein": 12,
+    "carbs": 66,
+    "fat": 9,
+    "fiber": 9,
+    "lines": [
+      {
+        "name": "Kesraa  estimés",
+        "quantity": "80 g"
+      },
+      {
+        "name": "fromage allégé",
+        "quantity": "30 g"
+      },
+      {
+        "name": "pomme",
+        "quantity": "150 g"
+      }
+    ]
+  },
+  {
+    "id": "BF-025",
+    "nameFr": "Pain complet, lait, fruit",
+    "composition": "Pain 80 g + lait 200 ml + fruit 150 g",
+    "portionG": 430,
+    "kcalServing": 390,
+    "protein": 15,
+    "carbs": 71,
+    "fat": 6,
+    "fiber": 8,
+    "lines": [
+      {
+        "name": "Pain",
+        "quantity": "80 g"
+      },
+      {
+        "name": "lait",
+        "quantity": "200 ml"
+      },
+      {
+        "name": "fruit",
+        "quantity": "150 g"
+      }
+    ]
+  },
+  {
+    "id": "BF-026",
+    "nameFr": "Pain complet, fromage frais, dattes",
+    "composition": "Pain 50 g + fromage frais 30 g + 2 dattes (≈16 g)",
+    "portionG": 96,
+    "kcalServing": 260,
+    "protein": 9,
+    "carbs": 38,
+    "fat": 8,
+    "fiber": 4,
+    "lines": [
+      {
+        "name": "Pain",
+        "quantity": "50 g"
+      },
+      {
+        "name": "fromage frais",
+        "quantity": "30 g"
+      },
+      {
+        "name": "2 dattes",
+        "quantity": "16 g"
+      }
+    ]
+  },
+  {
+    "id": "BF-027",
+    "nameFr": "Pancakes farine complète, œuf, lait, miel",
+    "composition": "Farine 60 g + œuf 1 + lait 100 ml + miel 15 g estimés",
+    "portionG": 225,
+    "kcalServing": 390,
+    "protein": 16,
+    "carbs": 59,
+    "fat": 10,
+    "fiber": 5,
+    "lines": [
+      {
+        "name": "Farine",
+        "quantity": "60 g"
+      },
+      {
+        "name": "Œufs",
+        "quantity": "1 œufs"
+      },
+      {
+        "name": "lait",
+        "quantity": "100 ml"
+      },
+      {
+        "name": "miel  estimés",
+        "quantity": "15 g"
+      }
+    ]
+  },
+  {
+    "id": "BF-028",
+    "nameFr": "Lait écrémé, yaourt, banane, granola",
+    "composition": "Lait 200 ml + yaourt 125 g + banane 100 g + granola 30 g",
+    "portionG": 455,
+    "kcalServing": 400,
+    "protein": 19,
+    "carbs": 68,
+    "fat": 7,
+    "fiber": 6,
+    "lines": [
+      {
+        "name": "Lait",
+        "quantity": "200 ml"
+      },
+      {
+        "name": "yaourt",
+        "quantity": "125 g"
+      },
+      {
+        "name": "banane",
+        "quantity": "100 g"
+      },
+      {
+        "name": "granola",
+        "quantity": "30 g"
+      }
+    ]
+  },
+  {
+    "id": "BF-029",
+    "nameFr": "Avoine, œuf, miel, chocolat, lait, huile",
+    "composition": "Avoine 40 g + œuf 1 + miel 5 g + chocolat 5 g + lait 80 ml + huile 3 g",
+    "portionG": 185,
+    "kcalServing": 340,
+    "protein": 14,
+    "carbs": 42,
+    "fat": 13,
+    "fiber": 5,
+    "lines": [
+      {
+        "name": "Avoine",
+        "quantity": "40 g"
+      },
+      {
+        "name": "Œufs",
+        "quantity": "1 œufs"
+      },
+      {
+        "name": "miel",
+        "quantity": "5 g"
+      },
+      {
+        "name": "chocolat",
+        "quantity": "5 g"
+      },
+      {
+        "name": "lait",
+        "quantity": "80 ml"
+      },
+      {
+        "name": "huile",
+        "quantity": "3 g"
+      }
+    ]
+  },
+  {
+    "id": "BF-030",
+    "nameFr": "Pain complet + beurre de cacahuète + fruit",
+    "composition": "Pain 60 g + beurre de cacahuète 15 g + fruit 100 g",
+    "portionG": 175,
+    "kcalServing": 350,
+    "protein": 11,
+    "carbs": 54,
+    "fat": 12,
+    "fiber": 8,
+    "lines": [
+      {
+        "name": "Pain",
+        "quantity": "60 g"
+      },
+      {
+        "name": "beurre de cacahuète",
+        "quantity": "15 g"
+      },
+      {
+        "name": "fruit",
+        "quantity": "100 g"
+      }
+    ]
+  },
+  {
+    "id": "BF-031",
+    "nameFr": "Pain seigle, thon, fromage frais",
+    "composition": "Pain seigle 60 g + thon 60 g + fromage frais 30 g",
+    "portionG": 150,
+    "kcalServing": 300,
+    "protein": 25,
+    "carbs": 31,
+    "fat": 7,
+    "fiber": 5,
+    "lines": [
+      {
+        "name": "Pain seigle",
+        "quantity": "60 g"
+      },
+      {
+        "name": "thon",
+        "quantity": "60 g"
+      },
+      {
+        "name": "fromage frais",
+        "quantity": "30 g"
+      }
+    ]
+  },
+  {
+    "id": "BF-032",
+    "nameFr": "Omelette blette, huile, pain complet",
+    "composition": "2 œufs + blette 100 g + huile 10 g + pain 80 g",
+    "portionG": 290,
+    "kcalServing": 500,
+    "protein": 25,
+    "carbs": 43,
+    "fat": 25,
+    "fiber": 7,
+    "lines": [
+      {
+        "name": "2 œufs",
+        "quantity": "2 œufs"
+      },
+      {
+        "name": "blette",
+        "quantity": "100 g"
+      },
+      {
+        "name": "huile",
+        "quantity": "10 g"
+      },
+      {
+        "name": "pain",
+        "quantity": "80 g"
+      }
+    ]
+  },
+  {
+    "id": "BF-033",
+    "nameFr": "Toast thon et olives",
+    "composition": "Pain complet 80 g + thon 60 g + olives vertes 80 g",
+    "portionG": 220,
+    "kcalServing": 470,
+    "protein": 26,
+    "carbs": 41,
+    "fat": 21,
+    "fiber": 7,
+    "lines": [
+      {
+        "name": "Pain complet",
+        "quantity": "80 g"
+      },
+      {
+        "name": "thon",
+        "quantity": "60 g"
+      },
+      {
+        "name": "olives vertes",
+        "quantity": "80 g"
+      }
+    ]
+  },
+  {
+    "id": "BF-034",
+    "nameFr": "Banane, yaourt grec, granola, noix, fruits",
+    "composition": "Banane 100 g + yaourt grec 120 g + granola 40 g + noix 10 g + fruit 80 g",
+    "portionG": 350,
+    "kcalServing": 500,
+    "protein": 19,
+    "carbs": 77,
+    "fat": 15,
+    "fiber": 10,
+    "lines": [
+      {
+        "name": "Banane",
+        "quantity": "100 g"
+      },
+      {
+        "name": "yaourt grec",
+        "quantity": "120 g"
+      },
+      {
+        "name": "granola",
+        "quantity": "40 g"
+      },
+      {
+        "name": "noix",
+        "quantity": "10 g"
+      },
+      {
+        "name": "fruit",
+        "quantity": "80 g"
+      }
+    ]
+  },
+  {
+    "id": "BF-035",
+    "nameFr": "Avoine, amandes, miel, lait",
+    "composition": "Avoine 40 g + amandes 10 g + miel 10 g + lait 100 ml",
+    "portionG": 160,
+    "kcalServing": 300,
+    "protein": 10,
+    "carbs": 42,
+    "fat": 11,
+    "fiber": 6,
+    "lines": [
+      {
+        "name": "Avoine",
+        "quantity": "40 g"
+      },
+      {
+        "name": "amandes",
+        "quantity": "10 g"
+      },
+      {
+        "name": "miel",
+        "quantity": "10 g"
+      },
+      {
+        "name": "lait",
+        "quantity": "100 ml"
+      }
+    ]
+  },
+  {
+    "id": "BF-036",
+    "nameFr": "Céréales complètes, lait, banane",
+    "composition": "Céréales 40 g estimés + lait 200 ml + banane 100 g",
+    "portionG": 340,
+    "kcalServing": 370,
+    "protein": 12,
+    "carbs": 69,
+    "fat": 5,
+    "fiber": 7,
+    "lines": [
+      {
+        "name": "Céréales  estimés",
+        "quantity": "40 g"
+      },
+      {
+        "name": "lait",
+        "quantity": "200 ml"
+      },
+      {
+        "name": "banane",
+        "quantity": "100 g"
+      }
+    ]
+  },
+  {
+    "id": "BF-037",
+    "nameFr": "Avoine, lait, fruit, lin, miel",
+    "composition": "Avoine 40 g + lait écrémé 200 ml + fruit 100 g + lin 5 g + miel 5 g",
+    "portionG": 350,
+    "kcalServing": 330,
+    "protein": 14,
+    "carbs": 54,
+    "fat": 7,
+    "fiber": 10,
+    "lines": [
+      {
+        "name": "Avoine",
+        "quantity": "40 g"
+      },
+      {
+        "name": "lait écrémé",
+        "quantity": "200 ml"
+      },
+      {
+        "name": "fruit",
+        "quantity": "100 g"
+      },
+      {
+        "name": "lin",
+        "quantity": "5 g"
+      },
+      {
+        "name": "miel",
+        "quantity": "5 g"
+      }
+    ]
+  },
+  {
+    "id": "BF-038",
+    "nameFr": "Bowl avoine, miel, lait, poire",
+    "composition": "Avoine 50 g + miel 10 g + lait 100 ml + poire 150 g",
+    "portionG": 310,
+    "kcalServing": 340,
+    "protein": 10,
+    "carbs": 61,
+    "fat": 6,
+    "fiber": 8,
+    "lines": [
+      {
+        "name": "Avoine",
+        "quantity": "50 g"
+      },
+      {
+        "name": "miel",
+        "quantity": "10 g"
+      },
+      {
+        "name": "lait",
+        "quantity": "100 ml"
+      },
+      {
+        "name": "poire",
+        "quantity": "150 g"
+      }
+    ]
+  },
+  {
+    "id": "BF-039",
+    "nameFr": "Œufs brouillés, pain, beurre ou houmous",
+    "composition": "2 œufs + pain 80 g + beurre 10 g (ou houmous 20 g)",
+    "portionG": 240,
+    "kcalServing": 500,
+    "protein": 25,
+    "carbs": 41,
+    "fat": 25,
+    "fiber": 6,
+    "lines": [
+      {
+        "name": "2 œufs",
+        "quantity": "2 œufs"
+      },
+      {
+        "name": "pain",
+        "quantity": "80 g"
+      },
+      {
+        "name": "beurre  ou houmous 20 g",
+        "quantity": "10 g"
+      }
+    ]
+  },
+  {
+    "id": "BF-040",
+    "nameFr": "Œufs, pain complet, huile d’olive",
+    "composition": "2 œufs + pain 60 g + huile 5 g",
+    "portionG": 195,
+    "kcalServing": 390,
+    "protein": 20,
+    "carbs": 31,
+    "fat": 19,
+    "fiber": 5,
+    "lines": [
+      {
+        "name": "2 œufs",
+        "quantity": "2 œufs"
+      },
+      {
+        "name": "pain",
+        "quantity": "60 g"
+      },
+      {
+        "name": "huile",
+        "quantity": "5 g"
+      }
+    ]
+  },
+  {
+    "id": "BF-041",
+    "nameFr": "Porridge avoine, lait, miel, noix",
+    "composition": "Avoine 50 g + lait 200 ml + miel 15 g estimés + noix 10 g",
+    "portionG": 275,
+    "kcalServing": 390,
+    "protein": 14,
+    "carbs": 57,
+    "fat": 13,
+    "fiber": 6,
+    "lines": [
+      {
+        "name": "Avoine",
+        "quantity": "50 g"
+      },
+      {
+        "name": "lait",
+        "quantity": "200 ml"
+      },
+      {
+        "name": "miel  estimés",
+        "quantity": "15 g"
+      },
+      {
+        "name": "noix",
+        "quantity": "10 g"
+      }
+    ]
+  },
+  {
+    "id": "BF-042",
+    "nameFr": "Bowl cake avoine-banane-œuf-yaourt",
+    "composition": "Avoine 40 g + banane 80 g + œuf 1 + yaourt 60 g + levure 3 g",
+    "portionG": 235,
+    "kcalServing": 350,
+    "protein": 15,
+    "carbs": 50,
+    "fat": 10,
+    "fiber": 7,
+    "lines": [
+      {
+        "name": "Avoine",
+        "quantity": "40 g"
+      },
+      {
+        "name": "banane",
+        "quantity": "80 g"
+      },
+      {
+        "name": "Œufs",
+        "quantity": "1 œufs"
+      },
+      {
+        "name": "yaourt",
+        "quantity": "60 g"
+      },
+      {
+        "name": "levure",
+        "quantity": "3 g"
+      }
+    ]
+  },
+  {
+    "id": "BF-043",
+    "nameFr": "Granola maison avoine, yaourt, amandes, miel",
+    "composition": "Avoine 50 g + yaourt 100 g + amandes 10 g + miel 10 g",
+    "portionG": 170,
+    "kcalServing": 350,
+    "protein": 13,
+    "carbs": 52,
+    "fat": 10,
+    "fiber": 7,
+    "lines": [
+      {
+        "name": "Avoine",
+        "quantity": "50 g"
+      },
+      {
+        "name": "yaourt",
+        "quantity": "100 g"
+      },
+      {
+        "name": "amandes",
+        "quantity": "10 g"
+      },
+      {
+        "name": "miel",
+        "quantity": "10 g"
+      }
+    ]
+  },
+  {
+    "id": "BF-044",
+    "nameFr": "Pain complet, œuf poché, fromage frais",
+    "composition": "Pain 60 g + œuf 1 + fromage frais 30 g",
+    "portionG": 140,
+    "kcalServing": 320,
+    "protein": 16,
+    "carbs": 33,
+    "fat": 12,
+    "fiber": 4,
+    "lines": [
+      {
+        "name": "Pain",
+        "quantity": "60 g"
+      },
+      {
+        "name": "Œufs",
+        "quantity": "1 œufs"
+      },
+      {
+        "name": "fromage frais",
+        "quantity": "30 g"
+      }
+    ]
+  },
+  {
+    "id": "BF-045",
+    "nameFr": "Œufs, épinards, tomates, huile, pain",
+    "composition": "2 œufs + épinards 80 g estimés + tomates 150 g + huile 10 g + pain 40 g",
+    "portionG": 380,
+    "kcalServing": 430,
+    "protein": 23,
+    "carbs": 30,
+    "fat": 24,
+    "fiber": 8,
+    "lines": [
+      {
+        "name": "2 œufs",
+        "quantity": "2 œufs"
+      },
+      {
+        "name": "épinards  estimés",
+        "quantity": "80 g"
+      },
+      {
+        "name": "tomates",
+        "quantity": "150 g"
+      },
+      {
+        "name": "huile",
+        "quantity": "10 g"
+      },
+      {
+        "name": "pain",
+        "quantity": "40 g"
+      }
+    ]
+  },
+  {
+    "id": "BF-046",
+    "nameFr": "Pudding avoine, lait, lin, fruit",
+    "composition": "Avoine 40 g + lait 150 ml + lin 10 g estimés + fruit 100 g",
+    "portionG": 300,
+    "kcalServing": 330,
+    "protein": 12,
+    "carbs": 51,
+    "fat": 9,
+    "fiber": 10,
+    "lines": [
+      {
+        "name": "Avoine",
+        "quantity": "40 g"
+      },
+      {
+        "name": "lait",
+        "quantity": "150 ml"
+      },
+      {
+        "name": "lin  estimés",
+        "quantity": "10 g"
+      },
+      {
+        "name": "fruit",
+        "quantity": "100 g"
+      }
+    ]
+  },
+  {
+    "id": "BF-047",
+    "nameFr": "Avoine, miel, lait",
+    "composition": "Avoine 40 g + miel 10 g + lait 150 ml",
+    "portionG": 200,
+    "kcalServing": 280,
+    "protein": 10,
+    "carbs": 45,
+    "fat": 6,
+    "fiber": 4,
+    "lines": [
+      {
+        "name": "Avoine",
+        "quantity": "40 g"
+      },
+      {
+        "name": "miel",
+        "quantity": "10 g"
+      },
+      {
+        "name": "lait",
+        "quantity": "150 ml"
+      }
+    ]
+  },
+  {
+    "id": "BF-048",
+    "nameFr": "Toast thon, concombre, mayonnaise légère",
+    "composition": "Pain 80 g + thon 80 g + concombre 50 g + mayo légère 5 g",
+    "portionG": 215,
+    "kcalServing": 350,
+    "protein": 29,
+    "carbs": 42,
+    "fat": 6,
+    "fiber": 6,
+    "lines": [
+      {
+        "name": "Pain",
+        "quantity": "80 g"
+      },
+      {
+        "name": "thon",
+        "quantity": "80 g"
+      },
+      {
+        "name": "concombre",
+        "quantity": "50 g"
+      },
+      {
+        "name": "mayo légère",
+        "quantity": "5 g"
+      }
+    ]
+  },
+  {
+    "id": "BF-049",
+    "nameFr": "Tartine beurre cacahuète, pomme, yaourt",
+    "composition": "Pain 40 g + beurre cacahuète 10 g + pomme 120 g + yaourt 100 g",
+    "portionG": 270,
+    "kcalServing": 330,
+    "protein": 11,
+    "carbs": 51,
+    "fat": 10,
+    "fiber": 7,
+    "lines": [
+      {
+        "name": "Pain",
+        "quantity": "40 g"
+      },
+      {
+        "name": "beurre cacahuète",
+        "quantity": "10 g"
+      },
+      {
+        "name": "pomme",
+        "quantity": "120 g"
+      },
+      {
+        "name": "yaourt",
+        "quantity": "100 g"
+      }
+    ]
+  },
+  {
+    "id": "BF-050",
+    "nameFr": "Tartines pain complet, fromage, fruit",
+    "composition": "Pain 80 g + fromage 30 g + fruit 150 g",
+    "portionG": 260,
+    "kcalServing": 410,
+    "protein": 15,
+    "carbs": 63,
+    "fat": 12,
+    "fiber": 8,
+    "lines": [
+      {
+        "name": "Pain",
+        "quantity": "80 g"
+      },
+      {
+        "name": "fromage",
+        "quantity": "30 g"
+      },
+      {
+        "name": "fruit",
+        "quantity": "150 g"
+      }
+    ]
+  },
+  {
+    "id": "BF-051",
+    "nameFr": "Pain complet, banane, œuf dur",
+    "composition": "Pain 40 g estimés + banane 100 g + œuf 1",
+    "portionG": 190,
+    "kcalServing": 300,
+    "protein": 11,
+    "carbs": 44,
+    "fat": 9,
+    "fiber": 5,
+    "lines": [
+      {
+        "name": "Pain  estimés",
+        "quantity": "40 g"
+      },
+      {
+        "name": "banane",
+        "quantity": "100 g"
+      },
+      {
+        "name": "Œufs",
+        "quantity": "1 œufs"
+      }
+    ]
+  }
+]

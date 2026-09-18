@@ -17,6 +17,11 @@ export type NutritionTargets = {
   profileNotes: string[];
 };
 
+export type MealLine = {
+  name: string;
+  quantity: string;
+};
+
 export type PlannedMeal = {
   slot: "Petit-déjeuner" | "Déjeuner" | "Dîner" | "Collation";
   recipeId: string;
@@ -26,6 +31,8 @@ export type PlannedMeal = {
   portionG: number;
   kcal: number;
   alternatives: string[];
+  /** Ingredient-style lines for table display: "pain (80 g)" */
+  lines: MealLine[];
 };
 
 export type DayPlan = {

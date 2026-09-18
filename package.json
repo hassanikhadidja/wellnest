@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "nutrition:export": "node scripts/export-nutrition-data.js"
+    "nutrition:export": "node scripts/export-nutrition-data.js && node scripts/export-breakfasts.js"
   },
   "dependencies": {
     "next": "16.2.12",

@@ -8,7 +8,7 @@ import { MobileBottomNav } from "@/components/MobileBottomNav";
 export const metadata: Metadata = {
   title: "Programmes personnalisés — WELLNEST",
   description:
-    "Plans nutritionnels personnalisés : essai 3 jours gratuit, puis 1 semaine, 1 mois ou 3 mois en dinars algériens. Questionnaire gratuit obligatoire.",
+    "Journée type gratuite après questionnaire, puis formules Complete, Premium et Suivi.",
 };
 
 type PageProps = {

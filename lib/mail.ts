@@ -52,11 +52,22 @@ function getTransporter() {
   // App passwords are often pasted with spaces; Gmail accepts them without.
   const pass = requiredEnv("GMAIL_APP_PASSWORD").replace(/\s+/g, "");
 
+  // Local antivirus / corporate SSL inspection often injects a self-signed cert
+  // into the SMTP chain ("self-signed certificate in certificate chain").
+  // Production keeps strict TLS unless MAIL_TLS_INSECURE=1 is set.
+  const insecureTls =
+    process.env.MAIL_TLS_INSECURE === "1" ||
+    (process.env.NODE_ENV !== "production" && process.env.MAIL_TLS_INSECURE !== "0");
+
   return nodemailer.createTransport({
     host: "smtp.gmail.com",
     port: 465,
     secure: true,
     auth: { user, pass },
+    tls: {
+      rejectUnauthorized: !insecureTls,
+      minVersion: "TLSv1.2",
+    },
   });
 }
 
@@ -222,4 +233,23 @@ export function escapeHtml(value: string): string {
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#39;");
+}
+
+/** Simple admin notification without HTML template file */
+export async function sendAdminNotice(options: {
+  subject: string;
+  html: string;
+  text: string;
+}): Promise<void> {
+  const fromUser = requiredEnv("GMAIL_USER");
+  const transporter = getTransporter();
+  await transporter.sendMail({
+    from: `"WELLNEST" <${fromUser}>`,
+    replyTo: fromUser,
+    to: ADMIN_EMAIL,
+    subject: options.subject,
+    text: options.text,
+    html: options.html,
+    headers: { "X-Mailer": "WELLNEST" },
+  });
 }
