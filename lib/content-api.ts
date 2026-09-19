@@ -5,7 +5,7 @@ import { resolveContentLanguage } from "@/lib/content-language";
 import type { Ebook } from "@/lib/ebooks";
 import type { DashArticle, DashEbook } from "@/lib/dashboard-store";
 
-const CLIENT_TTL_MS = 60_000;
+const CLIENT_TTL_MS = 15_000;
 
 type CacheEntry<T> = { at: number; data: T };
 
@@ -13,6 +13,14 @@ let articlesClientCache: CacheEntry<Article[]> | null = null;
 let ebooksClientCache: CacheEntry<Ebook[]> | null = null;
 let articlesInflight: Promise<Article[]> | null = null;
 let ebooksInflight: Promise<Ebook[]> | null = null;
+
+/** Call after dashboard create/update/delete so /ebooks shows fresh data */
+export function invalidateContentCaches() {
+  articlesClientCache = null;
+  ebooksClientCache = null;
+  articlesInflight = null;
+  ebooksInflight = null;
+}
 
 function estimateReadTime(text: string, language: string) {
   const words = text.trim().split(/\s+/).filter(Boolean).length;
@@ -133,8 +141,7 @@ export function mapDashEbook(e: DashEbook): Ebook {
 async function fetchJson<T>(path: string): Promise<T | null> {
   try {
     const res = await fetch(`${getApiBase()}${path}`, {
-      // Cached on the server so listing pages don't wait on a cold backend every time.
-      next: { revalidate: 60 },
+      cache: "no-store",
     });
     if (!res.ok) return null;
     return (await res.json()) as T;

@@ -694,6 +694,14 @@ export function DashboardPanel() {
                 <p className="mt-1 text-[12px] text-muted">
                   Ajoutez, renommez ou supprimez les options affichées à la création d&apos;un e-book.
                 </p>
+                {ebookCategoryOptions.length === 0 ? (
+                  <p className="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-[12px] text-amber-900">
+                    Impossible de charger les catégories depuis l&apos;API (
+                    <code className="text-[11px]">/ebook-category</code>). Vérifiez que le backend
+                    Vercel est bien redéployé depuis la dernière version de{" "}
+                    <code className="text-[11px]">wellnest-backend</code>.
+                  </p>
+                ) : null}
                 <ul className="mt-3 space-y-2">
                   {ebookCategoryOptions.map((cat) => (
                     <li
@@ -1330,6 +1338,7 @@ export function DashboardPanel() {
                   recipeMeta: ebookForm.isRecipe ? ebookForm.recipeMeta : undefined,
                 });
                 setEbookForm(null);
+                await refresh();
               });
             }}
           >

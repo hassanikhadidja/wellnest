@@ -493,26 +493,34 @@ export async function fetchEbookCategories(): Promise<EbookCategoryOption[]> {
 }
 
 export async function createEbookCategory(name: string): Promise<EbookCategoryOption> {
-  return api<EbookCategoryOption>("/ebook-category", {
+  const created = await api<EbookCategoryOption>("/ebook-category", {
     method: "POST",
     auth: true,
     body: { name: name.trim() },
   });
+  const { invalidateContentCaches } = await import("@/lib/content-api");
+  invalidateContentCaches();
+  return created;
 }
 
 export async function updateEbookCategory(
   id: string,
   name: string
 ): Promise<EbookCategoryOption> {
-  return api<EbookCategoryOption>(`/ebook-category/${id}`, {
+  const updated = await api<EbookCategoryOption>(`/ebook-category/${id}`, {
     method: "PATCH",
     auth: true,
     body: { name: name.trim() },
   });
+  const { invalidateContentCaches } = await import("@/lib/content-api");
+  invalidateContentCaches();
+  return updated;
 }
 
 export async function deleteEbookCategory(id: string): Promise<void> {
   await api(`/ebook-category/${id}`, { method: "DELETE", auth: true });
+  const { invalidateContentCaches } = await import("@/lib/content-api");
+  invalidateContentCaches();
 }
 
 export async function saveEbook(
@@ -540,6 +548,8 @@ export async function saveEbook(
     tags: input.tags,
   };
 
+  const { invalidateContentCaches } = await import("@/lib/content-api");
+
   if (input.id) {
     const updated = await api<DashEbook>(`/ebook/${input.id}`, {
       method: "PATCH",
@@ -554,7 +564,8 @@ export async function saveEbook(
         : e
     );
     writeCache(store);
-    return;
+    invalidateContentCaches();
+    return updated;
   }
 
   const created = await api<DashEbook>("/ebook", {
@@ -568,6 +579,8 @@ export async function saveEbook(
     asDashEbook({ ...created, language: created.language ?? language })
   );
   writeCache(store);
+  invalidateContentCaches();
+  return created;
 }
 
 export async function deleteEbook(id: string) {
@@ -575,6 +588,8 @@ export async function deleteEbook(id: string) {
   const store = readCache();
   store.ebooks = store.ebooks.filter((e) => e.id !== id);
   writeCache(store);
+  const { invalidateContentCaches } = await import("@/lib/content-api");
+  invalidateContentCaches();
 }
 
 export async function upsertEmail(input: {

@@ -86,14 +86,29 @@ export function EbooksListing({
   const isAr = uiLang === "ar";
 
   useEffect(() => {
-    // One fetch only — featured is derived from the same list.
-    void Promise.all([resolveEbooks(), resolveEbookCategoryNames()]).then(
-      ([list, names]) => {
-        setItems(list);
-        setFeaturedEbook(list.find((ebook) => ebook.featured) ?? list[0] ?? null);
-        setCategoryOptions(["Tous", ...names]);
-      }
-    );
+    let cancelled = false;
+
+    async function loadEbooks() {
+      const [list, names] = await Promise.all([
+        resolveEbooks(),
+        resolveEbookCategoryNames(),
+      ]);
+      if (cancelled) return;
+      setItems(list);
+      setFeaturedEbook(list.find((ebook) => ebook.featured) ?? list[0] ?? null);
+      setCategoryOptions(["Tous", ...names]);
+    }
+
+    void loadEbooks();
+
+    const onFocus = () => {
+      void loadEbooks();
+    };
+    window.addEventListener("focus", onFocus);
+    return () => {
+      cancelled = true;
+      window.removeEventListener("focus", onFocus);
+    };
   }, []);
 
   useEffect(() => {

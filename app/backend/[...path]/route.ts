@@ -26,25 +26,14 @@ async function proxy(req: NextRequest, context: RouteContext) {
     if (value) headers.set(key, value);
   }
 
-  // Public content lists can be cached briefly; auth/mutating requests stay fresh.
-  const pathKey = path.join("/");
-  const isPublicContentGet =
-    method === "GET" &&
-    !headers.has("authorization") &&
-    (pathKey === "article" ||
-      pathKey === "ebook" ||
-      /^article\/[^/]+$/.test(pathKey) ||
-      /^ebook\/[^/]+$/.test(pathKey));
-
   let upstream: Response;
   try {
     upstream = await fetch(targetUrl, {
       method,
       headers,
       body: hasBody ? await req.arrayBuffer() : undefined,
-      ...(isPublicContentGet
-        ? { next: { revalidate: 60 } }
-        : { cache: "no-store" as const }),
+      // Never cache proxied CMS content — admin edits must show immediately on /ebooks.
+      cache: "no-store",
     });
   } catch {
     return NextResponse.json(
@@ -58,6 +47,7 @@ async function proxy(req: NextRequest, context: RouteContext) {
   const responseHeaders = new Headers();
   const contentType = upstream.headers.get("content-type");
   if (contentType) responseHeaders.set("content-type", contentType);
+  responseHeaders.set("Cache-Control", "no-store");
 
   return new NextResponse(await upstream.arrayBuffer(), {
     status: upstream.status,
