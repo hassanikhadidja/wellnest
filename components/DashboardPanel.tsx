@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useId, useMemo, useState, type ReactNode } from "react";
-import { api, getCurrentUser, getToken } from "@/lib/api";
+import { ApiError, api, clearAuth, getCurrentUser, getToken } from "@/lib/api";
 import {
   CONTENT_LANGUAGES,
   contentLanguage,
@@ -19,14 +19,10 @@ import {
   type DashEbook,
   type DashEmail,
   type DashUser,
-  type EbookCategoryOption,
   type UserRole,
-  createEbookCategory,
   deleteArticle,
   deleteEbook,
-  deleteEbookCategory,
   deleteUser,
-  fetchEbookCategories,
   linesToList,
   listToLines,
   newSection,
@@ -38,7 +34,6 @@ import {
   saveUser,
   setEmailAccepted,
   tagsFromInput,
-  updateEbookCategory,
   upsertEmail,
 } from "@/lib/dashboard-store";
 import {
@@ -360,35 +355,38 @@ export function DashboardPanel() {
   const [highlightsText, setHighlightsText] = useState("");
   const [summaryText, setSummaryText] = useState("");
   const [ebookTags, setEbookTags] = useState("");
-  const [ebookCategoryOptions, setEbookCategoryOptions] = useState<EbookCategoryOption[]>([]);
-  const [newCategoryName, setNewCategoryName] = useState("");
-  const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null);
-  const [editingCategoryName, setEditingCategoryName] = useState("");
 
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [authed, setAuthed] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
 
-  const ebookCategoryNames = useMemo(
-    () =>
-      ebookCategoryOptions.length
-        ? ebookCategoryOptions.map((item) => item.name)
-        : [...EBOOK_CATEGORIES],
-    [ebookCategoryOptions]
-  );
-
   const refresh = async () => {
     const token = Boolean(getToken());
     const user = getCurrentUser();
     setAuthed(token);
-    setIsAdmin(token && user?.role === "admin");
-    const [store, categories] = await Promise.all([refreshStore(), fetchEbookCategories()]);
+    setIsAdmin(Boolean(token && user?.role === "admin"));
+    const store = await refreshStore();
     setUsers(store.users);
     setArticles(store.articles);
     setEbooks(store.ebooks);
     setEmails(store.emails);
-    setEbookCategoryOptions(categories);
+
+    // Token present but rejected by the new backend → force re-login
+    if (token && user?.role === "admin") {
+      try {
+        await api("/user", { auth: true });
+      } catch (e) {
+        if (e instanceof ApiError && e.status === 401) {
+          clearAuth();
+          setAuthed(false);
+          setIsAdmin(false);
+          setError(
+            "Session expirée ou invalide (nouveau backend). Déconnectez-vous puis reconnectez-vous en admin pour enregistrer."
+          );
+        }
+      }
+    }
   };
 
   useEffect(() => {
@@ -424,7 +422,16 @@ export function DashboardPanel() {
       await action();
       await refresh();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Une erreur est survenue.");
+      if (e instanceof ApiError && e.status === 401) {
+        clearAuth();
+        setAuthed(false);
+        setIsAdmin(false);
+        setError(
+          "Unauthorized — reconnectez-vous en tant qu'admin (le backend a changé, l'ancienne session n'est plus valide)."
+        );
+      } else {
+        setError(e instanceof Error ? e.message : "Une erreur est survenue.");
+      }
     } finally {
       setBusy(false);
     }
@@ -511,11 +518,12 @@ export function DashboardPanel() {
             </p>
           )}
           {!authed && (
-            <p className="mb-4 rounded-lg bg-cream px-3 py-2 text-[13px] text-ink">
-              Connectez-vous en tant qu&apos;admin pour gérer utilisateurs et emails.{" "}
-              <Link href="/profil" className="font-semibold text-olive hover:underline">
-                Se connecter
-              </Link>
+            <p className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-[13px] text-amber-950">
+              Vous n&apos;êtes pas connecté(e) avec une session valide.{" "}
+              <Link href="/auth" className="font-semibold text-olive underline">
+                Reconnectez-vous en admin
+              </Link>{" "}
+              pour pouvoir enregistrer les e-books (catégories, à la une, etc.).
             </p>
           )}
           {active === "users" && (
@@ -686,131 +694,6 @@ export function DashboardPanel() {
                   + AJOUTER
                 </button>
               </header>
-
-              <section className="mb-5 rounded-xl border border-sand/70 bg-cream/30 p-4">
-                <p className="text-[11px] font-bold uppercase tracking-wide text-olive">
-                  Catégories e-book
-                </p>
-                <p className="mt-1 text-[12px] text-muted">
-                  Ajoutez, renommez ou supprimez les options affichées à la création d&apos;un e-book.
-                </p>
-                {ebookCategoryOptions.length === 0 ? (
-                  <p className="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-[12px] text-amber-900">
-                    Impossible de charger les catégories depuis l&apos;API (
-                    <code className="text-[11px]">/ebook-category</code>). Vérifiez que le backend
-                    Vercel est bien redéployé depuis la dernière version de{" "}
-                    <code className="text-[11px]">wellnest-backend</code>.
-                  </p>
-                ) : null}
-                <ul className="mt-3 space-y-2">
-                  {ebookCategoryOptions.map((cat) => (
-                    <li
-                      key={cat.id}
-                      className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-sand/60 bg-white px-3 py-2"
-                    >
-                      {editingCategoryId === cat.id ? (
-                        <input
-                          className={inputClass}
-                          value={editingCategoryName}
-                          onChange={(e) => setEditingCategoryName(e.target.value)}
-                          aria-label="Nouveau nom de catégorie"
-                        />
-                      ) : (
-                        <span className="text-[13px] font-medium text-ink">{cat.name}</span>
-                      )}
-                      <div className="flex gap-2">
-                        {editingCategoryId === cat.id ? (
-                          <>
-                            <button
-                              type="button"
-                              disabled={busy}
-                              className="text-[12px] font-semibold text-olive disabled:opacity-50"
-                              onClick={() =>
-                                void run(async () => {
-                                  await updateEbookCategory(cat.id, editingCategoryName);
-                                  setEditingCategoryId(null);
-                                  setEditingCategoryName("");
-                                  await refresh();
-                                })
-                              }
-                            >
-                              Enregistrer
-                            </button>
-                            <button
-                              type="button"
-                              className="text-[12px] font-semibold text-muted"
-                              onClick={() => {
-                                setEditingCategoryId(null);
-                                setEditingCategoryName("");
-                              }}
-                            >
-                              Annuler
-                            </button>
-                          </>
-                        ) : (
-                          <>
-                            <button
-                              type="button"
-                              className="text-[12px] font-semibold text-olive"
-                              onClick={() => {
-                                setEditingCategoryId(cat.id);
-                                setEditingCategoryName(cat.name);
-                              }}
-                            >
-                              Modifier
-                            </button>
-                            <button
-                              type="button"
-                              disabled={busy}
-                              className="text-[12px] font-semibold text-red-700 disabled:opacity-50"
-                              onClick={() => {
-                                if (
-                                  !window.confirm(
-                                    `Supprimer la catégorie « ${cat.name} » ? Elle sera retirée des e-books.`
-                                  )
-                                ) {
-                                  return;
-                                }
-                                void run(async () => {
-                                  await deleteEbookCategory(cat.id);
-                                  await refresh();
-                                });
-                              }}
-                            >
-                              Supprimer
-                            </button>
-                          </>
-                        )}
-                      </div>
-                    </li>
-                  ))}
-                  {ebookCategoryOptions.length === 0 && (
-                    <li className="text-[12px] text-muted">Chargement des catégories…</li>
-                  )}
-                </ul>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  <input
-                    className={`${inputClass} min-w-[200px] flex-1`}
-                    placeholder="Nouvelle catégorie…"
-                    value={newCategoryName}
-                    onChange={(e) => setNewCategoryName(e.target.value)}
-                  />
-                  <button
-                    type="button"
-                    disabled={busy || !newCategoryName.trim()}
-                    className="rounded-full bg-olive px-4 py-2 text-[11px] font-bold tracking-wide text-white hover:bg-olive-dark disabled:opacity-50"
-                    onClick={() =>
-                      void run(async () => {
-                        await createEbookCategory(newCategoryName);
-                        setNewCategoryName("");
-                        await refresh();
-                      })
-                    }
-                  >
-                    + AJOUTER CATÉGORIE
-                  </button>
-                </div>
-              </section>
 
               <ul className="space-y-3">
                 {ebooks.length === 0 && <li className="text-[13px] text-muted">Aucun e-book pour le moment.</li>}
@@ -1325,6 +1208,12 @@ export function DashboardPanel() {
             className="space-y-3"
             onSubmit={(e) => {
               e.preventDefault();
+              if (!getToken()) {
+                setError(
+                  "Unauthorized — reconnectez-vous en tant qu'admin avant d'enregistrer."
+                );
+                return;
+              }
               if (!ebookForm.categories.length) {
                 alert("Choisissez au moins une catégorie.");
                 return;
@@ -1363,7 +1252,7 @@ export function DashboardPanel() {
                 onChange={(categories) =>
                   setEbookForm((prev) => (prev ? { ...prev, categories } : prev))
                 }
-                options={ebookCategoryNames}
+                options={EBOOK_CATEGORIES}
               />
             </Field>
             <label className="flex items-center gap-2 text-[13px] font-semibold">

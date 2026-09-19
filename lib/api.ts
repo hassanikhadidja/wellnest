@@ -126,7 +126,10 @@ export async function api<T = unknown>(
   if (!formData) headers["Content-Type"] = "application/json";
   if (auth) {
     const token = getToken();
-    if (token) headers.Authorization = `Bearer ${token}`;
+    if (!token) {
+      throw new ApiError(401, "Non connecté — reconnectez-vous.");
+    }
+    headers.Authorization = `Bearer ${token}`;
   }
 
   const res = await fetch(`${getApiBase()}${path}`, {

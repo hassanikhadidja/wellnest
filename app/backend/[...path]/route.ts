@@ -21,7 +21,11 @@ async function proxy(req: NextRequest, context: RouteContext) {
   const hasBody = method !== "GET" && method !== "HEAD";
 
   const headers = new Headers();
-  for (const key of ["content-type", "authorization", "accept"]) {
+  // Forward auth reliably (some runtimes normalize header names).
+  const authHeader =
+    req.headers.get("authorization") || req.headers.get("Authorization");
+  if (authHeader) headers.set("authorization", authHeader);
+  for (const key of ["content-type", "accept"]) {
     const value = req.headers.get(key);
     if (value) headers.set(key, value);
   }
