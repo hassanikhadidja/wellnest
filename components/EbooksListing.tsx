@@ -120,7 +120,6 @@ export function EbooksListing({
     } else if (tag.includes("shopping") || tag.includes("courses") || tag.includes("liste")) {
       setSortBy("grocery-free");
     } else if (tag.includes("guide")) {
-      setCategory("Guides Pratiques");
       setSortBy("ebook");
     }
   }, [searchParams]);
@@ -139,24 +138,23 @@ export function EbooksListing({
         language === "all" || inferContentLanguage(ebook, "ebook") === language;
       const matchCategory =
         category === "Tous" ||
-        (category === "Guides Pratiques"
-          ? ebook.productType === "ebook"
-          : ebook.category === category);
+        ebook.categories?.includes(category) ||
+        ebook.category === category;
       const matchQuery =
         !q ||
         ebook.title.toLowerCase().includes(q) ||
-        ebook.category.toLowerCase().includes(q);
-      const matchSort =
-        category === "Guides Pratiques" || wantAllGuides
-          ? ebook.productType === "ebook"
-          : wantAllGrocery
-            ? ebook.productType === "grocery"
-            : sortBy === "recent" ||
-              (sortBy === "recipe-free" && ebook.productType === "recipe" && ebook.pricing === "free") ||
-              (sortBy === "recipe-paid" && ebook.productType === "recipe" && ebook.pricing === "paid") ||
-              (sortBy === "grocery-free" && ebook.productType === "grocery" && ebook.pricing === "free") ||
-              (sortBy === "grocery-paid" && ebook.productType === "grocery" && ebook.pricing === "paid") ||
-              (sortBy === "ebook" && ebook.productType === "ebook");
+        ebook.category.toLowerCase().includes(q) ||
+        ebook.categories?.some((c) => c.toLowerCase().includes(q));
+      const matchSort = wantAllGuides
+        ? ebook.productType === "ebook"
+        : wantAllGrocery
+          ? ebook.productType === "grocery"
+          : sortBy === "recent" ||
+            (sortBy === "recipe-free" && ebook.productType === "recipe" && ebook.pricing === "free") ||
+            (sortBy === "recipe-paid" && ebook.productType === "recipe" && ebook.pricing === "paid") ||
+            (sortBy === "grocery-free" && ebook.productType === "grocery" && ebook.pricing === "free") ||
+            (sortBy === "grocery-paid" && ebook.productType === "grocery" && ebook.pricing === "paid") ||
+            (sortBy === "ebook" && ebook.productType === "ebook");
       return matchLanguage && matchCategory && matchQuery && matchSort;
     });
   }, [category, language, query, sortBy, searchParams, items]);
@@ -169,7 +167,7 @@ export function EbooksListing({
     sortBy === "recent" &&
     (language === "all" || featuredLang === language) &&
     (category === "Tous" ||
-      category === "Guides Pratiques" ||
+      featuredEbook.categories?.includes(category) ||
       featuredEbook.category === category);
 
   const activeSortLabel =

@@ -80,7 +80,8 @@ export function mapDashEbook(e: DashEbook): Ebook {
   return {
     id: e.id,
     language,
-    category: e.categories[0] || (e.isRecipe ? "Recettes" : "Guides Pratiques"),
+    categories: Array.isArray(e.categories) ? e.categories : [],
+    category: e.categories[0] || (e.isRecipe ? "Déjeuners équilibrés" : "Petit-déjeuner"),
     title: e.title,
     subtitle: e.subtitle,
     description: e.about || e.subtitle,

@@ -10,7 +10,7 @@ const navLinks = [
   { label: "ACCUEIL", href: "/" },
   { label: "À PROPOS", href: "/apropos" },
   { label: "SERVICES", href: "/#services", dropdown: true },
-  { label: "BLOG", href: "/ebooks" },
+  { label: "E-BOOKS", href: "/ebooks" },
   { label: "RESSOURCES", href: "/articles", dropdown: true },
   { label: "BOUTIQUE", href: "/programmes" },
   { label: "CONTACT", href: "/#contact" },

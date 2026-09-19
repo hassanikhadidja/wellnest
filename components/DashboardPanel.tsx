@@ -13,6 +13,7 @@ import {
 } from "@/lib/content-language";
 import {
   CONTENT_CATEGORIES,
+  EBOOK_CATEGORIES,
   type ContentCategory,
   type DashArticle,
   type DashEbook,
@@ -225,13 +226,15 @@ function ImageUrlField({
 function CategoryPicker({
   value,
   onChange,
+  options = CONTENT_CATEGORIES,
 }: {
-  value: ContentCategory[];
-  onChange: (next: ContentCategory[]) => void;
+  value: string[];
+  onChange: (next: string[]) => void;
+  options?: readonly string[];
 }) {
   return (
     <div className="flex flex-wrap gap-2">
-      {CONTENT_CATEGORIES.map((cat) => {
+      {options.map((cat) => {
         const active = value.includes(cat);
         return (
           <button
@@ -1001,7 +1004,12 @@ export function DashboardPanel() {
             <Field label="Catégories (une ou plusieurs)">
               <CategoryPicker
                 value={articleForm.categories}
-                onChange={(categories) => setArticleForm({ ...articleForm, categories })}
+                onChange={(categories) =>
+                  setArticleForm({
+                    ...articleForm,
+                    categories: categories as ContentCategory[],
+                  })
+                }
               />
             </Field>
             <ImageUrlField
@@ -1207,7 +1215,10 @@ export function DashboardPanel() {
             <Field label="Catégories (une ou plusieurs)">
               <CategoryPicker
                 value={ebookForm.categories}
-                onChange={(categories) => setEbookForm({ ...ebookForm, categories })}
+                onChange={(categories) =>
+                  setEbookForm((prev) => (prev ? { ...prev, categories } : prev))
+                }
+                options={EBOOK_CATEGORIES}
               />
             </Field>
             <label className="flex items-center gap-2 text-[13px] font-semibold">

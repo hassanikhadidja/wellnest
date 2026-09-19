@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { AuthForm } from "@/components/AuthForm";
+import { MealPlanTable } from "@/components/MealPlanTable";
+import { NutritionTargetsSummary } from "@/components/NutritionTargetsSummary";
 import {
   AUTH_CHANGED_EVENT,
   getCurrentUser,
@@ -19,14 +21,53 @@ import {
 } from "@/lib/dashboard-store";
 import { requestEmail } from "@/lib/email-client";
 import {
+  generateNutritionPackage,
+  toClientNutritionPackage,
+  PLAN_LOGIC_VERSION,
+  type ClientNutritionPackage,
+} from "@/lib/nutrition";
+import { getClientNutritionPlan, saveClientNutritionPlan } from "@/lib/nutrition/client-storage";
+import {
   getNewsletterOptIn,
   setNewsletterOptIn,
 } from "@/lib/newsletter-preference";
-import {
-  getProgrammeRecommendation,
-  type ProgrammeRecommendation,
-} from "@/lib/programme-recommendation";
 import { getQuestionnaireAnswers, isQuestionnaireDone } from "@/lib/questionnaire";
+
+function isStalePlan(plan: ClientNutritionPackage | null) {
+  if (!plan?.dayOne?.meals?.length) return true;
+  if (plan.planLogicVersion !== PLAN_LOGIC_VERSION) return true;
+  if (plan.dayOne.meals.some((meal) => !meal.lines?.length)) return true;
+  if (
+    plan.dayOne.meals.some(
+      (meal) => meal.slot === "Petit-déjeuner" && !String(meal.recipeId).startsWith("BF-")
+    )
+  ) {
+    return true;
+  }
+  return plan.shoppingDayOne.some(
+    (item) =>
+      item.category === "Recettes prévues" ||
+      /légumes de saison|assida|baklawa/i.test(`${item.name} ${item.category}`)
+  );
+}
+
+function loadDayPlan(): ClientNutritionPackage | null {
+  if (!isQuestionnaireDone()) return null;
+  let plan = getClientNutritionPlan();
+  if (isStalePlan(plan)) {
+    const answers = getQuestionnaireAnswers();
+    if (answers) {
+      try {
+        const pkg = generateNutritionPackage(answers);
+        plan = toClientNutritionPackage(pkg);
+        saveClientNutritionPlan(plan);
+      } catch {
+        plan = plan ?? null;
+      }
+    }
+  }
+  return plan;
+}
 
 export function ProfilePage() {
   const router = useRouter();
@@ -36,7 +77,7 @@ export function ProfilePage() {
   const [newsletterBusy, setNewsletterBusy] = useState(false);
   const [newsletterMsg, setNewsletterMsg] = useState("");
   const [questionnaireDone, setQuestionnaireDone] = useState(false);
-  const [recommendation, setRecommendation] = useState<ProgrammeRecommendation | null>(null);
+  const [dayPlan, setDayPlan] = useState<ClientNutritionPackage | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -53,12 +94,7 @@ export function ProfilePage() {
 
       const done = isQuestionnaireDone();
       setQuestionnaireDone(done);
-      if (done) {
-        const answers = getQuestionnaireAnswers();
-        setRecommendation(answers ? getProgrammeRecommendation(answers) : null);
-      } else {
-        setRecommendation(null);
-      }
+      setDayPlan(done ? loadDayPlan() : null);
       setReady(true);
     }
 
@@ -67,7 +103,7 @@ export function ProfilePage() {
       if (!token) {
         if (!cancelled) {
           setUser(null);
-          setRecommendation(null);
+          setDayPlan(null);
           setQuestionnaireDone(false);
           setReady(true);
         }
@@ -171,8 +207,8 @@ export function ProfilePage() {
 
   return (
     <div className="bg-cream/40 px-4 py-10 sm:py-14">
-      <div className="mx-auto w-full max-w-lg space-y-5">
-        <div className="rounded-2xl border border-sand/70 bg-white p-6 shadow-[0_8px_30px_rgba(44,42,38,0.08)] sm:p-8">
+      <div className="mx-auto w-full max-w-[960px] space-y-5">
+        <div className="mx-auto w-full max-w-lg rounded-2xl border border-sand/70 bg-white p-6 shadow-[0_8px_30px_rgba(44,42,38,0.08)] sm:p-8">
           <div className="flex items-start justify-between gap-3">
             <div>
               <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-olive">Mon profil</p>
@@ -232,30 +268,36 @@ export function ProfilePage() {
         </div>
 
         <div className="rounded-2xl border border-sand/70 bg-white p-6 shadow-[0_8px_30px_rgba(44,42,38,0.08)] sm:p-8">
-          <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-olive">Programmes</p>
-          {questionnaireDone && recommendation ? (
+          <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-olive">
+            Votre journée type
+          </p>
+          {questionnaireDone && dayPlan ? (
             <>
               <h2 className="font-display mt-2 text-2xl font-semibold text-ink">
-                {recommendation.track.name}
+                Plan repas — 1 jour
               </h2>
-              <p className="mt-1 text-[13px] font-medium text-olive">
-                {recommendation.track.profileLabel}
-              </p>
-              <p className="mt-3 text-[13px] leading-relaxed text-muted">
-                {recommendation.track.description}
-              </p>
-              <ul className="mt-4 flex flex-wrap gap-2">
-                {recommendation.track.focus.map((item) => (
-                  <li
-                    key={item}
-                    className="rounded-full border border-olive/20 bg-cream/50 px-3 py-1 text-[11px] font-medium text-ink"
-                  >
-                    {item}
-                  </li>
-                ))}
-              </ul>
+              <NutritionTargetsSummary targets={dayPlan.targets} className="mt-2" />
+              <div className="mt-5">
+                <MealPlanTable
+                  title="JOURNÉE TYPE"
+                  days={[
+                    {
+                      ...dayPlan.dayOne,
+                      label: dayPlan.dayOne.label || "Jour 1",
+                    },
+                  ]}
+                  shopping={dayPlan.shoppingDayOne}
+                />
+              </div>
+              {dayPlan.targets.clinicalFlags.length > 0 ? (
+                <ul className="mt-4 space-y-1 text-[12px] text-olive-dark">
+                  {dayPlan.targets.clinicalFlags.map((flag) => (
+                    <li key={flag}>• {flag}</li>
+                  ))}
+                </ul>
+              ) : null}
               <Link
-                href="/programmes?result=1"
+                href="/programmes"
                 className="mt-5 inline-flex items-center gap-2 rounded-full bg-olive px-5 py-3 text-[11px] font-bold tracking-[0.06em] text-white transition-colors hover:bg-olive-dark"
               >
                 Voir les formules
@@ -265,11 +307,11 @@ export function ProfilePage() {
           ) : (
             <>
               <h2 className="font-display mt-2 text-2xl font-semibold text-ink">
-                Pas encore de programme
+                Pas encore de plan repas
               </h2>
               <p className="mt-2 text-[13px] leading-relaxed text-muted">
-                Complétez le questionnaire Nutri-Profil pour découvrir le programme adapté à votre
-                situation.
+                Complétez le questionnaire Nutri-Profil pour recevoir votre journée type (repas +
+                liste de courses).
               </p>
               <Link
                 href="/questionnaire?next=/profil"

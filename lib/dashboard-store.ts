@@ -35,6 +35,13 @@ export const CONTENT_CATEGORIES = [
 ] as const;
 
 export type ContentCategory = (typeof CONTENT_CATEGORIES)[number];
+
+/** Categories shown when adding/editing e-books in the dashboard */
+export {
+  ebookAssignableCategories as EBOOK_CATEGORIES,
+  type EbookAssignableCategory as EbookCategory,
+} from "@/lib/ebooks";
+
 export type UserRole = "user" | "admin";
 
 export type DashUser = {
@@ -80,7 +87,7 @@ export type DashEbook = {
   id: string;
   language: ContentLanguage;
   featured: boolean;
-  categories: ContentCategory[];
+  categories: string[];
   isRecipe: boolean;
   recipeMeta?: RecipeMeta;
   title: string;

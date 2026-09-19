@@ -29,7 +29,7 @@ const quickLinks = [
   { label: "Accueil", href: "/" },
   { label: "À propos", href: "/apropos", chevron: true },
   { label: "Services", href: "/#services", chevron: true },
-  { label: "Blog", href: "/ebooks" },
+  { label: "E-Books", href: "/ebooks" },
   { label: "Ressources", href: "/articles", chevron: true },
   { label: "Boutique", href: "/programmes" },
   { label: "Contact", href: "/#contact" },

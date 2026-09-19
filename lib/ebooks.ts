@@ -24,6 +24,8 @@ export type Ebook = {
   id: string;
   language?: ContentLanguage;
   category: string;
+  /** All categories from the API (filters match any) */
+  categories: string[];
   title: string;
   subtitle: string;
   description: string;
@@ -50,15 +52,21 @@ export type Ebook = {
   cardAuthor?: string;
 };
 
-export const ebookCategories = [
-  "Tous",
-  "Nutrition Maman",
-  "Bébé & Enfant",
-  "Santé Globale",
-  "Bien-être",
-  "Recettes",
-  "Guides Pratiques",
+export const ebookAssignableCategories = [
+  "Petit-déjeuner",
+  "Lunch Box",
+  "Déjeuners équilibrés",
+  "Desserts sains",
+  "Boissons saines",
+  "Fruits & Smoothies",
+  "Options végétariennes",
+  "Repas protéinés",
+  "Menus pour enfants",
 ] as const;
+
+export type EbookAssignableCategory = (typeof ebookAssignableCategories)[number];
+
+export const ebookCategories = ["Tous", ...ebookAssignableCategories] as const;
 
 /** No static demos — content comes from the API only. */
 export const ebooks: Ebook[] = [];
