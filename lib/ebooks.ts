@@ -68,6 +68,17 @@ export type EbookAssignableCategory = (typeof ebookAssignableCategories)[number]
 
 export const ebookCategories = ["Tous", ...ebookAssignableCategories] as const;
 
+export async function resolveEbookCategoryNames(): Promise<string[]> {
+  try {
+    const { fetchEbookCategories } = await import("@/lib/dashboard-store");
+    const rows = await fetchEbookCategories();
+    if (rows.length) return rows.map((row) => row.name);
+  } catch {
+    // fallback below
+  }
+  return [...ebookAssignableCategories];
+}
+
 /** No static demos — content comes from the API only. */
 export const ebooks: Ebook[] = [];
 

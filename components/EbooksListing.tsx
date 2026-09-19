@@ -13,6 +13,7 @@ import {
 } from "@/lib/content-language";
 import {
   ebookCategories,
+  resolveEbookCategoryNames,
   resolveEbooks,
   sortFilters,
   type Ebook,
@@ -72,7 +73,8 @@ export function EbooksListing({
 }) {
   const searchParams = useSearchParams();
   const [query, setQuery] = useState("");
-  const [category, setCategory] = useState<(typeof ebookCategories)[number]>("Tous");
+  const [category, setCategory] = useState<string>("Tous");
+  const [categoryOptions, setCategoryOptions] = useState<string[]>([...ebookCategories]);
   const [language, setLanguage] = useState<ContentLanguage | "all">("all");
   const [sortBy, setSortBy] = useState<SortFilter>("recent");
   const [sortOpen, setSortOpen] = useState(false);
@@ -85,10 +87,13 @@ export function EbooksListing({
 
   useEffect(() => {
     // One fetch only — featured is derived from the same list.
-    void resolveEbooks().then((list) => {
-      setItems(list);
-      setFeaturedEbook(list.find((ebook) => ebook.featured) ?? list[0] ?? null);
-    });
+    void Promise.all([resolveEbooks(), resolveEbookCategoryNames()]).then(
+      ([list, names]) => {
+        setItems(list);
+        setFeaturedEbook(list.find((ebook) => ebook.featured) ?? list[0] ?? null);
+        setCategoryOptions(["Tous", ...names]);
+      }
+    );
   }, []);
 
   useEffect(() => {
@@ -97,8 +102,8 @@ export function EbooksListing({
 
   useEffect(() => {
     const categoryParam = searchParams.get("category");
-    if (categoryParam && (ebookCategories as readonly string[]).includes(categoryParam)) {
-      setCategory(categoryParam as (typeof ebookCategories)[number]);
+    if (categoryParam && categoryOptions.includes(categoryParam)) {
+      setCategory(categoryParam);
     }
 
     const sortParam = searchParams.get("sort");
@@ -122,7 +127,7 @@ export function EbooksListing({
     } else if (tag.includes("guide")) {
       setSortBy("ebook");
     }
-  }, [searchParams]);
+  }, [searchParams, categoryOptions]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -284,7 +289,7 @@ export function EbooksListing({
 
         {/* Categories */}
         <div className="mb-6 flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          {ebookCategories.map((item) => {
+          {categoryOptions.map((item) => {
             const active = item === category;
             return (
               <button

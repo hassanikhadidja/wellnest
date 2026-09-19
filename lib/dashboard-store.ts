@@ -36,10 +36,9 @@ export const CONTENT_CATEGORIES = [
 
 export type ContentCategory = (typeof CONTENT_CATEGORIES)[number];
 
-/** Categories shown when adding/editing e-books in the dashboard */
+/** Categories shown when adding/editing e-books (fallback until API loads) */
 export {
   ebookAssignableCategories as EBOOK_CATEGORIES,
-  type EbookAssignableCategory as EbookCategory,
 } from "@/lib/ebooks";
 
 export type UserRole = "user" | "admin";
@@ -468,6 +467,52 @@ export async function deleteArticle(id: string) {
   const store = readCache();
   store.articles = store.articles.filter((a) => a.id !== id);
   writeCache(store);
+}
+
+export type EbookCategoryOption = {
+  id: string;
+  name: string;
+  order: number;
+};
+
+export async function fetchEbookCategories(): Promise<EbookCategoryOption[]> {
+  try {
+    const rows = await api<EbookCategoryOption[]>("/ebook-category");
+    return Array.isArray(rows)
+      ? rows
+          .map((row) => ({
+            id: String(row.id),
+            name: String(row.name || "").trim(),
+            order: typeof row.order === "number" ? row.order : 0,
+          }))
+          .filter((row) => row.name)
+      : [];
+  } catch {
+    return [];
+  }
+}
+
+export async function createEbookCategory(name: string): Promise<EbookCategoryOption> {
+  return api<EbookCategoryOption>("/ebook-category", {
+    method: "POST",
+    auth: true,
+    body: { name: name.trim() },
+  });
+}
+
+export async function updateEbookCategory(
+  id: string,
+  name: string
+): Promise<EbookCategoryOption> {
+  return api<EbookCategoryOption>(`/ebook-category/${id}`, {
+    method: "PATCH",
+    auth: true,
+    body: { name: name.trim() },
+  });
+}
+
+export async function deleteEbookCategory(id: string): Promise<void> {
+  await api(`/ebook-category/${id}`, { method: "DELETE", auth: true });
 }
 
 export async function saveEbook(

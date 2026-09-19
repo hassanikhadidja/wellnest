@@ -19,10 +19,14 @@ import {
   type DashEbook,
   type DashEmail,
   type DashUser,
+  type EbookCategoryOption,
   type UserRole,
+  createEbookCategory,
   deleteArticle,
   deleteEbook,
+  deleteEbookCategory,
   deleteUser,
+  fetchEbookCategories,
   linesToList,
   listToLines,
   newSection,
@@ -34,6 +38,7 @@ import {
   saveUser,
   setEmailAccepted,
   tagsFromInput,
+  updateEbookCategory,
   upsertEmail,
 } from "@/lib/dashboard-store";
 import {
@@ -355,22 +360,35 @@ export function DashboardPanel() {
   const [highlightsText, setHighlightsText] = useState("");
   const [summaryText, setSummaryText] = useState("");
   const [ebookTags, setEbookTags] = useState("");
+  const [ebookCategoryOptions, setEbookCategoryOptions] = useState<EbookCategoryOption[]>([]);
+  const [newCategoryName, setNewCategoryName] = useState("");
+  const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null);
+  const [editingCategoryName, setEditingCategoryName] = useState("");
 
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [authed, setAuthed] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
 
+  const ebookCategoryNames = useMemo(
+    () =>
+      ebookCategoryOptions.length
+        ? ebookCategoryOptions.map((item) => item.name)
+        : [...EBOOK_CATEGORIES],
+    [ebookCategoryOptions]
+  );
+
   const refresh = async () => {
     const token = Boolean(getToken());
     const user = getCurrentUser();
     setAuthed(token);
     setIsAdmin(token && user?.role === "admin");
-    const store = await refreshStore();
+    const [store, categories] = await Promise.all([refreshStore(), fetchEbookCategories()]);
     setUsers(store.users);
     setArticles(store.articles);
     setEbooks(store.ebooks);
     setEmails(store.emails);
+    setEbookCategoryOptions(categories);
   };
 
   useEffect(() => {
@@ -668,6 +686,124 @@ export function DashboardPanel() {
                   + AJOUTER
                 </button>
               </header>
+
+              <section className="mb-5 rounded-xl border border-sand/70 bg-cream/30 p-4">
+                <p className="text-[11px] font-bold uppercase tracking-wide text-olive">
+                  Catégories e-book
+                </p>
+                <p className="mt-1 text-[12px] text-muted">
+                  Ajoutez, renommez ou supprimez les options affichées à la création d&apos;un e-book.
+                </p>
+                <ul className="mt-3 space-y-2">
+                  {ebookCategoryOptions.map((cat) => (
+                    <li
+                      key={cat.id}
+                      className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-sand/60 bg-white px-3 py-2"
+                    >
+                      {editingCategoryId === cat.id ? (
+                        <input
+                          className={inputClass}
+                          value={editingCategoryName}
+                          onChange={(e) => setEditingCategoryName(e.target.value)}
+                          aria-label="Nouveau nom de catégorie"
+                        />
+                      ) : (
+                        <span className="text-[13px] font-medium text-ink">{cat.name}</span>
+                      )}
+                      <div className="flex gap-2">
+                        {editingCategoryId === cat.id ? (
+                          <>
+                            <button
+                              type="button"
+                              disabled={busy}
+                              className="text-[12px] font-semibold text-olive disabled:opacity-50"
+                              onClick={() =>
+                                void run(async () => {
+                                  await updateEbookCategory(cat.id, editingCategoryName);
+                                  setEditingCategoryId(null);
+                                  setEditingCategoryName("");
+                                  await refresh();
+                                })
+                              }
+                            >
+                              Enregistrer
+                            </button>
+                            <button
+                              type="button"
+                              className="text-[12px] font-semibold text-muted"
+                              onClick={() => {
+                                setEditingCategoryId(null);
+                                setEditingCategoryName("");
+                              }}
+                            >
+                              Annuler
+                            </button>
+                          </>
+                        ) : (
+                          <>
+                            <button
+                              type="button"
+                              className="text-[12px] font-semibold text-olive"
+                              onClick={() => {
+                                setEditingCategoryId(cat.id);
+                                setEditingCategoryName(cat.name);
+                              }}
+                            >
+                              Modifier
+                            </button>
+                            <button
+                              type="button"
+                              disabled={busy}
+                              className="text-[12px] font-semibold text-red-700 disabled:opacity-50"
+                              onClick={() => {
+                                if (
+                                  !window.confirm(
+                                    `Supprimer la catégorie « ${cat.name} » ? Elle sera retirée des e-books.`
+                                  )
+                                ) {
+                                  return;
+                                }
+                                void run(async () => {
+                                  await deleteEbookCategory(cat.id);
+                                  await refresh();
+                                });
+                              }}
+                            >
+                              Supprimer
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    </li>
+                  ))}
+                  {ebookCategoryOptions.length === 0 && (
+                    <li className="text-[12px] text-muted">Chargement des catégories…</li>
+                  )}
+                </ul>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <input
+                    className={`${inputClass} min-w-[200px] flex-1`}
+                    placeholder="Nouvelle catégorie…"
+                    value={newCategoryName}
+                    onChange={(e) => setNewCategoryName(e.target.value)}
+                  />
+                  <button
+                    type="button"
+                    disabled={busy || !newCategoryName.trim()}
+                    className="rounded-full bg-olive px-4 py-2 text-[11px] font-bold tracking-wide text-white hover:bg-olive-dark disabled:opacity-50"
+                    onClick={() =>
+                      void run(async () => {
+                        await createEbookCategory(newCategoryName);
+                        setNewCategoryName("");
+                        await refresh();
+                      })
+                    }
+                  >
+                    + AJOUTER CATÉGORIE
+                  </button>
+                </div>
+              </section>
+
               <ul className="space-y-3">
                 {ebooks.length === 0 && <li className="text-[13px] text-muted">Aucun e-book pour le moment.</li>}
                 {ebooks.map((ebook) => {
@@ -1218,7 +1354,7 @@ export function DashboardPanel() {
                 onChange={(categories) =>
                   setEbookForm((prev) => (prev ? { ...prev, categories } : prev))
                 }
-                options={EBOOK_CATEGORIES}
+                options={ebookCategoryNames}
               />
             </Field>
             <label className="flex items-center gap-2 text-[13px] font-semibold">
