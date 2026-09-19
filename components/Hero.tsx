@@ -146,11 +146,9 @@ export function Hero() {
           </svg>
 
           <div className="hero-overlay-card animate-fade-up animate-delay-3 absolute bottom-8 left-1/2 z-30 w-[min(92%,320px)] -translate-x-[calc(50%-50px)] rounded-xl bg-white/95 p-5 text-center shadow-[0_8px_30px_rgba(44,42,38,0.12)] backdrop-blur-sm sm:bottom-12">
-            <p className="font-arabic text-[15px] font-semibold leading-relaxed text-ink" dir="rtl">
-              غذاء صحي لعائلة أكثر سعادة
-            </p>
-            <p className="font-arabic mt-1.5 text-[12px] leading-relaxed text-muted" dir="rtl">
-              برامج غذائية مخصصة لكل مرحلة من الحمل إلى المراهقة.
+            <p className="text-[14px] font-semibold leading-relaxed text-ink">
+              Des solutions nutritionnelles adaptées à chaque âge, chaque besoin et chaque étape de
+              la vie.
             </p>
             <Link
               href="/questionnaire"
